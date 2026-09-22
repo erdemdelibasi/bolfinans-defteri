@@ -160,6 +160,7 @@
     font-size:10px; color:var(--ink-faint); letter-spacing:.02em;
     font-family:'IBM Plex Mono',monospace; margin-bottom:2px; white-space:nowrap;
   }
+  .src.stamp{ opacity:.85; margin-top:-1px; }
   .tick{ animation:tick .55s ease; }
   @keyframes tick{ from{ background:var(--accent-soft); } to{ background:transparent; } }
   @media (prefers-reduced-motion:reduce){ .tick{ animation:none; } }
@@ -344,18 +345,46 @@ function fmtPrice(n){
   return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4});
 }
 
-/* Fiyatin ustunde duran kucuk kaynak satiri: hangi sembolden geldigi ve ne
-   kadar taze oldugu. Statik surumde tazelik yok (sayfanin tamami bir anlik
-   goruntu, tarihi basligin altinda yaziyor), o yuzden yalnizca sembol basilir. */
-function srcLabel(sym){
+const fmtStamp = (epoch) => new Date(epoch * 1000).toLocaleString("tr-TR", {
+  day: "2-digit", month: "2-digit", year: "numeric",
+  hour: "2-digit", minute: "2-digit", second: "2-digit",
+});
+const fmtDay = (epoch) => new Date(epoch * 1000).toLocaleDateString("tr-TR", {
+  day: "2-digit", month: "2-digit", year: "numeric",
+});
+
+/* Fiyatin ustunde duran kucuk kaynak satiri: hangi sembolden geldigi ve
+   EKRANDAKI SAYININ HANGI ANA AIT OLDUGU. Statik surumde saat yok -- sayfanin
+   tamami tek bir anlik goruntu ve tarihi basligin altinda yaziyor. */
+function srcTicker(sym){
   const meta = priceMeta[sym];
-  const ticker = (meta && meta.src) || DATA.tv_tickers[sym] || "";
-  if (!LIVE || !meta) return ticker;
-  const m = /delayed_streaming_(\d+)/.exec(meta.mode || "");
-  if (!m) return `${ticker} · canlı`;
+  return (meta && meta.src) || DATA.tv_tickers[sym] || "";
+}
+
+/* Uc ayri durum, ve ucunu birbirine karistirmak yanlis saat basar:
+
+   1) Gercek zamanli seri  -> veri ani = beslemenin update_time'i.
+   2) Gecikmeli seri, seans ACIK -> ekrandaki sayi piyasanin N saniye onceki
+      halini anlatiyor, o yuzden update_time'dan gecikme DUSULUYOR. Ham
+      update_time'i basmak "az once" demek olurdu ki yanlis.
+   3) Gecikmeli seri, seans KAPALI -> tuzak burada: update_time borsa kapaliyken
+      de ilerlemeye devam ediyor (olculdu), yani "15 dk once" diye bir sayi
+      uretilebilirdi ama fiyat aslinda son kapanisa ait. Bu durumda saat degil,
+      son seansin GUNU yaziliyor.
+
+   Not: beslemenin saati tarayicininkinden birkac saniye ileride olabilir
+   (olculdu, ~20 sn). Duzeltilmiyor -- hangi saatin dogru oldugunu bilemeyiz ve
+   olculen degeri kendi kafamiza gore kaydirmak, gosterdigi seyi bozmak olur. */
+function quoteWhen(sym){
+  const meta = priceMeta[sym];
+  if (!LIVE || !meta || !meta.updateTime) return "";
+  const d = /delayed_streaming_(\d+)/.exec(meta.mode || "");
+  if (!d) return fmtStamp(meta.updateTime);
   const isUS = (DATA.us_session_symbols || []).includes(sym);
-  if (isUS && !usMarketOpen()) return `${ticker} · kapanış`;
-  return `${ticker} · ${Math.round(Number(m[1]) / 60)} dk`;
+  if (isUS && !usMarketOpen()) {
+    return meta.barTime ? "kapanış · " + fmtDay(meta.barTime) : "son kapanış";
+  }
+  return fmtStamp(meta.updateTime - Number(d[1]));
 }
 
 function barHTML(pct){
@@ -398,7 +427,8 @@ function rowHTML(r){
     <td class="mono">${trDate(r.buy_date)}</td>
     <td class="right mono">${buyPrice}</td>
     <td class="right mono">${qty}</td>
-    <td class="right"><div class="src">${esc(srcLabel(r.sym))}</div>
+    <td class="right"><div class="src">${esc(srcTicker(r.sym))}</div>
+      ${LIVE ? `<div class="src stamp">${esc(quoteWhen(r.sym))}</div>` : ""}
       <div class="val-usd mono${flash}">${shown}</div>
       ${priceGain === null ? "" : `<div class="pct ${pgcls}">${priceGain >= 0 ? "+" : ""}${priceGain.toFixed(1)}%</div>`}</td>
     <td><span class="badge ${r.status_class}">${esc(r.status)}</span></td>
@@ -496,7 +526,10 @@ async function fetchTradingView(){
   const response = await fetch(TRADINGVIEW, {
     method: "POST",
     headers: {"Content-Type": "text/plain;charset=UTF-8"},
-    body: JSON.stringify({symbols: {tickers}, columns: ["close", "update_mode"]}),
+    // update_time: beslemenin bu satiri en son tazeledigi an.
+    // time: gunluk barin baslangici -- borsa kapaliyken son seansin gunu.
+    body: JSON.stringify({symbols: {tickers},
+                          columns: ["close", "update_mode", "update_time", "time"]}),
   });
   if (!response.ok) throw new Error("tv " + response.status);
   const rows = (await response.json()).data ?? [];
@@ -510,7 +543,7 @@ async function fetchTradingView(){
     if (Number.isFinite(v) && v > 0) {
       out[sym] = v;
       modes[sym] = cell[1];
-      meta[sym] = {src: ticker, mode: cell[1]};
+      meta[sym] = {src: ticker, mode: cell[1], updateTime: cell[2], barTime: cell[3]};
     }
   }
   const fx = bySymbol.get(DATA.tv_usdtry);
@@ -590,7 +623,10 @@ async function tick(){
       const b = await fetchBinance();
       for (const [sym, v] of Object.entries(b)) {
         prices[sym] = v.price;
-        priceMeta[sym] = {src: v.src, mode: "streaming"};
+        // Binance'in /ticker/price'i zaman damgasi vermiyor; besleme gercek
+        // zamanli oldugu icin cekim ani veri ani sayiliyor.
+        priceMeta[sym] = {src: v.src, mode: "streaming",
+                          updateTime: Math.floor(Date.now() / 1000)};
       }
       source = "Binance (yalnızca kripto)";
       delayNote = "Metal ve hisse fiyatları tazelenemedi";
