@@ -1,0 +1,592 @@
+<title>Bol Finans Defteri · Canlı</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#f5f1e8; --surface:#fffdf8; --surface-2:#efe9db;
+    --ink:#211f1a; --ink-soft:#6b6558; --ink-faint:#96907e;
+    --accent:#9c6b2e; --accent-ink:#5c3f18; --accent-soft:#f0dfc0;
+    --gain:#2f6f5e; --gain-soft:#dbe9e2; --loss:#a8452c; --loss-soft:#f2ded6;
+    --border:#ddd3bb; --border-soft:#e9e2cf;
+    --shadow: 0 1px 2px rgba(60,48,20,.06), 0 8px 24px -12px rgba(60,48,20,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15140f; --surface:#1d1b15; --surface-2:#26231b;
+      --ink:#ece5d3; --ink-soft:#a89f8a; --ink-faint:#726c5a;
+      --accent:#d9a94f; --accent-ink:#f3d089; --accent-soft:#3a2e17;
+      --gain:#57b79c; --gain-soft:#1c3129; --loss:#e2836a; --loss-soft:#38251e;
+      --border:#34301f; --border-soft:#2a2618;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15140f; --surface:#1d1b15; --surface-2:#26231b;
+    --ink:#ece5d3; --ink-soft:#a89f8a; --ink-faint:#726c5a;
+    --accent:#d9a94f; --accent-ink:#f3d089; --accent-soft:#3a2e17;
+    --gain:#57b79c; --gain-soft:#1c3129; --loss:#e2836a; --loss-soft:#38251e;
+    --border:#34301f; --border-soft:#2a2618;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    padding-inline:16px; padding-block:32px 64px;
+    display:flex; justify-content:center;
+  }
+  .page{ width:100%; max-width:920px; }
+  h1,h2,h3{ font-family:'Fraunces',serif; text-wrap:balance; margin:0; }
+  .mono{ font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; }
+
+  /* header */
+  header{ margin-bottom:28px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent-ink); background:var(--accent-soft);
+    border:1px solid var(--border); border-radius:999px;
+    padding:5px 12px 5px 10px; margin-bottom:16px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  h1{ font-size:clamp(28px,5vw,40px); font-weight:600; line-height:1.08; letter-spacing:-.01em; }
+  .subtitle{ color:var(--ink-soft); font-size:15.5px; line-height:1.55; max-width:62ch; margin-top:12px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:18px; font-size:13px; color:var(--ink-soft); }
+  .meta-row b{ color:var(--ink); font-weight:600; }
+
+  /* stat tiles */
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px; margin:26px 0 34px;
+  }
+  .stat{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .stat .label{ font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; }
+  .stat .value{ font-family:'Fraunces',serif; font-size:24px; font-weight:600; margin-top:6px; letter-spacing:-.01em; }
+  .stat .sub{ font-size:12.5px; color:var(--ink-faint); margin-top:3px; }
+  .stat.hero{ background:linear-gradient(155deg,var(--accent-soft),var(--surface)); border-color:var(--accent); }
+  .stat.hero .value{ color:var(--accent-ink); font-size:27px; }
+
+  /* section */
+  section{ margin-bottom:34px; }
+  .sec-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .sec-head h2{ font-size:20px; font-weight:600; }
+  .sec-head .sec-note{ font-size:12.5px; color:var(--ink-soft); }
+  .cat-totals{ display:flex; gap:16px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; }
+  .cat-totals b{ color:var(--ink); }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .tablewrap{ overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; min-width:880px; }
+  thead th{
+    text-align:left; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600; padding:12px 14px; border-bottom:1px solid var(--border);
+    background:var(--surface-2);
+  }
+  tbody td{ padding:13px 14px; border-bottom:1px solid var(--border-soft); font-size:13.5px; vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:var(--surface-2); }
+  .asset-name{ font-weight:600; }
+  .asset-ticker{ display:block; font-size:11px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; margin-top:1px; }
+  .right{ text-align:right; }
+
+  .badge{
+    display:inline-block; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px;
+    white-space:nowrap; letter-spacing:.01em;
+  }
+  .badge.open{ background:var(--gain-soft); color:var(--gain); }
+  .badge.closed{ background:var(--border-soft); color:var(--ink-soft); }
+  .badge.partial{ background:var(--accent-soft); color:var(--accent-ink); }
+
+  .bar-track{ position:relative; width:96px; height:6px; border-radius:4px; background:var(--border-soft); margin-top:6px; }
+  .bar-fill{ position:absolute; top:0; left:0; height:100%; border-radius:4px; }
+  .bar-fill.g{ background:var(--gain); }
+  .bar-fill.l{ background:var(--loss); }
+  .bar-mark{ position:absolute; top:-2px; width:1px; height:10px; background:var(--ink-faint); left:50%; }
+  .pct{ font-size:11px; margin-top:3px; font-weight:600; }
+  .pct.g{ color:var(--gain); } .pct.l{ color:var(--loss); }
+
+  .val-usd{ font-weight:600; }
+  .val-try{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+
+  /* notes */
+  .notes{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:20px 22px; box-shadow:var(--shadow); font-size:13.5px; line-height:1.7; color:var(--ink-soft);
+  }
+  .notes h3{ font-size:15px; color:var(--ink); margin-bottom:10px; }
+  .notes ul{ margin:0; padding-left:20px; }
+  .notes li{ margin-bottom:8px; }
+  .notes li b{ color:var(--ink); font-weight:600; }
+  .notes .flag{ color:var(--loss); font-weight:600; }
+
+  footer{ margin-top:36px; padding-top:20px; border-top:1px solid var(--border); font-size:12px; color:var(--ink-faint); line-height:1.6; }
+
+  @media (max-width:560px){
+    .stats{ grid-template-columns:repeat(2,1fr); }
+    thead th:nth-child(3), tbody td:nth-child(3){ display:none; }
+  }
+</style>
+
+
+<style>
+  .livebar{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-top:14px; padding:8px 12px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); width:fit-content;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .livedot{
+    width:7px; height:7px; border-radius:50%; background:var(--gain);
+    box-shadow:0 0 0 3px var(--gain-soft); flex:none;
+  }
+  .livedot.stale{ background:var(--loss); box-shadow:0 0 0 3px var(--loss-soft); }
+  .livedot.pending{ background:var(--ink-faint); box-shadow:0 0 0 3px var(--surface-2); }
+  .livesep{ color:var(--ink-faint); }
+  .tick{ animation:tick .55s ease; }
+  @keyframes tick{ from{ background:var(--accent-soft); } to{ background:transparent; } }
+  @media (prefers-reduced-motion:reduce){ .tick{ animation:none; } }
+</style>
+
+
+<div class="page">
+
+  <header>
+    <span class="eyebrow"><span class="dot"></span>Simülasyon &middot; Yatırım tavsiyesi değildir</span>
+    <h1>Bol Finans Defteri</h1>
+    <p class="subtitle">
+      @BolFinans YouTube kanalının videolarında sözlü olarak "aldım" / "sattım" dediği her noktada,
+      o varlığa <b style="color:var(--ink)">1.000 $</b> yatırılmış gibi kurulmuş bir kağıt üzerinde portföy.
+      <b style="color:var(--ink)">Bu sayfa canlıdır</b> — açık kaldığı sürece fiyatları kendisi tazeler, defterin kendisi (alış tarihleri, adetler, satış fiyatları) sabittir.
+    </p>
+    <div class="meta-row">
+      <span><b id="m-tranche">–</b> alım tranşı</span>
+      <span><b id="m-closed">–</b> kapanmış / kısmen kapanmış</span>
+      <span>Defter: <b id="m-ledger">–</b> tarihli videolara kadar</span>
+    </div>
+    <div class="livebar">
+      <span class="livedot" id="livedot"></span>
+      <span id="livetext">Fiyatlar alınıyor…</span>
+      <span class="livesep">·</span>
+      <span id="livedelay"></span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="label">Toplam Yatırılan</div>
+      <div class="value mono" id="s-invested">–</div>
+      <div class="sub" id="s-invested-sub">–</div>
+    </div>
+    <div class="stat">
+      <div class="label">Açık Pozisyon Değeri</div>
+      <div class="value mono" id="s-open">–</div>
+      <div class="sub" id="s-open-try">–</div>
+    </div>
+    <div class="stat">
+      <div class="label">Kapanan İşlemlerden Realize</div>
+      <div class="value mono" id="s-real">–</div>
+      <div class="sub" id="s-real-try">–</div>
+    </div>
+    <div class="stat hero">
+      <div class="label">Toplam Güncel Karşılık</div>
+      <div class="value mono" id="s-grand">–</div>
+      <div class="sub" id="s-grand-sub">–</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Değerli Metaller</h2>
+      <div class="cat-totals" id="tot-metal"></div>
+    </div>
+    <div class="card"><div class="tablewrap">
+      <table>
+        <thead><tr><th>Varlık</th><th>Alım</th><th class="right">Alış Fiyatı</th><th class="right">Miktar</th><th class="right">Güncel Fiyat</th><th>Durum</th><th class="right">Satış Fiyatı</th><th class="right">Değer</th></tr></thead>
+        <tbody id="tbl-metal"></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Kripto Para</h2>
+      <div class="cat-totals" id="tot-kripto"></div>
+    </div>
+    <div class="card"><div class="tablewrap">
+      <table>
+        <thead><tr><th>Varlık</th><th>Alım</th><th class="right">Alış Fiyatı</th><th class="right">Miktar</th><th class="right">Güncel Fiyat</th><th>Durum</th><th class="right">Satış Fiyatı</th><th class="right">Değer</th></tr></thead>
+        <tbody id="tbl-kripto"></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>ABD Hisse &amp; ETF (Nasdaq Portföyü)</h2>
+      <div class="cat-totals" id="tot-hisse"></div>
+    </div>
+    <div class="card"><div class="tablewrap">
+      <table>
+        <thead><tr><th>Varlık</th><th>Alım</th><th class="right">Alış Fiyatı</th><th class="right">Miktar</th><th class="right">Güncel Fiyat</th><th>Durum</th><th class="right">Satış Fiyatı</th><th class="right">Değer</th></tr></thead>
+        <tbody id="tbl-hisse"></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Uzun Vade Portföy</h2>
+      <div class="cat-totals" id="tot-uzunvade"></div>
+    </div>
+    <div class="card"><div class="tablewrap">
+      <table>
+        <thead><tr><th>Varlık</th><th>Alım</th><th class="right">Alış Fiyatı</th><th class="right">Miktar</th><th class="right">Güncel Fiyat</th><th>Durum</th><th class="right">Satış Fiyatı</th><th class="right">Değer</th></tr></thead>
+        <tbody id="tbl-uzunvade"></tbody>
+      </table>
+    </div></div>
+    <p class="subtitle" style="margin-top:10px;font-size:13px">
+      Konuşmacı 1 Ağustos 2026'da ayrı bir <b style="color:var(--ink)">uzun vade portföy</b> serisi başlattı;
+      bu iki ürün oradan. Kısa/orta vadeli defterin aksine bunlarda düşüşlerde satış yok, kademeli
+      ekleme mantığı var. Google'ın uzun vade girişi (Ekim 2025, ~240 $) ve henüz halka arz edilmemiş
+      Anthropic pencere dışında kaldığı için burada yok.
+    </p>
+  </section>
+
+  <section class="notes">
+    <h3>Bu sayfa canlı derken ne kastediliyor</h3>
+    <ul>
+      <li><b>Canlı olan:</b> yalnızca <b>güncel fiyatlar</b> ve onlardan türeyen her şey — pozisyon
+        değerleri, TL karşılıkları, yüzdeler, toplamlar. Fiyatlar TradingView'in tarayıcıdan
+        erişilebilen beslemesinden çekiliyor, kripto için Binance yedeği var.</li>
+      <li><b>Canlı olmayan:</b> defterin kendisi. Alış tarihleri, alış fiyatları, adetler ve satış
+        fiyatları geçmişte olmuş şeyler; onlar ancak yeni bir video okunup deftere işlendiğinde
+        değişir. Bu sayfa kendi kendine yeni video okuyup portföye satır ekleyemez.</li>
+      <li><b>Gecikmeler gizlenmiyor, ekranda yazıyor.</b> Kripto, USDTRY ve (spot olarak alındığı
+        için) altın/gümüş gerçek zamanlı; ABD hisseleri ve ETF'leri 15 dakika gecikmeli — gerçek
+        zamanlı ABD hisse verisi ücretli bir borsa beslemesi. Borsa kapalıyken şerit "gecikmeli"
+        değil <b>"borsa kapalı · son kapanış"</b> yazar, çünkü gecikemeyeceğiniz bir seansın
+        gecikmesi yoktur. Üstteki şerit bunu beslemenin kendi bildirdiği değerden yazıyor.</li>
+      <li><b>Yahoo Finance bu sayfada kullanılamaz</b> — tarayıcıya CORS izni vermiyor. Bu yüzden
+        hem bu sayfa hem de anlık görüntü artık fiyatlarını TradingView'den alıyor; ikisi aynı
+        seriyi kullanır, aralarında kaynak farkı yoktur.</li>
+      <li><b>Bağlantı koparsa sayfa boşalmaz:</b> en son alınan fiyatlar ekranda kalır, şerit
+        "tazelenemedi" der ve saatini yazar. Hiç internet yoksa sayfa
+        <span id="snapdate">anlık görüntü</span> fiyatlarıyla açılır ve bunu söyler.</li>
+      <li>Sekme arkaplandayken istek atılmaz; hata olursa aralık kademeli olarak uzar
+        (10 → 20 → 40 → 60 sn), ilk başarıda sıfırlanır.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Bu sayfa bir üçüncü şahsın YouTube'da paylaştığı kamuya açık yorumların geriye dönük, kağıt
+    üzerinde bir simülasyonudur. Hiçbir gerçek emir verilmedi, hiçbir hesap kullanılmadı.
+    Yatırım tavsiyesi değildir.
+  </footer>
+</div>
+
+
+<script>
+const DATA = {"snapshot_date": "2026-09-22", "usdtry": 48.8151, "snapshot_prices": {"XAUUSD": 4333.17, "XAGUSD": 65.7555, "BTC-USD": 86100.01, "ETH-USD": 2760.23, "XRP-USD": 1.5446, "NVDA": 227.38, "SOXX": 559.34, "GOOGL": 354.97, "CLOU": 28.93, "GRID": 181.08, "CIBR": 103.09, "ARTY": 78.57, "SKYY": 168.21, "RKLB": 69.89, "TLT": 81.8, "SKHY": 188.86, "QQQ": 741.47, "SPCX": 151.85}, "tv_tickers": {"XAUUSD": "TVC:GOLD", "XAGUSD": "TVC:SILVER", "BTC-USD": "BINANCE:BTCUSDT", "ETH-USD": "BINANCE:ETHUSDT", "XRP-USD": "BINANCE:XRPUSDT", "NVDA": "NASDAQ:NVDA", "SOXX": "NASDAQ:SOXX", "GOOGL": "NASDAQ:GOOGL", "CLOU": "NASDAQ:CLOU", "GRID": "NASDAQ:GRID", "CIBR": "NASDAQ:CIBR", "ARTY": "AMEX:ARTY", "SKYY": "NASDAQ:SKYY", "RKLB": "NASDAQ:RKLB", "TLT": "NASDAQ:TLT", "SKHY": "NASDAQ:SKHY", "QQQ": "NASDAQ:QQQ", "SPCX": "NASDAQ:SPCX"}, "tv_usdtry": "FX_IDC:USDTRY", "binance_fallback": {"BTC-USD": "BTCUSDT", "ETH-USD": "ETHUSDT", "XRP-USD": "XRPUSDT"}, "us_session_symbols": ["NVDA", "SOXX", "GOOGL", "CLOU", "GRID", "CIBR", "ARTY", "SKYY", "RKLB", "TLT", "SKHY", "QQQ", "SPCX"], "tranche_usd": 1000.0, "rows": [{"sym": "XAUUSD", "cat": "metal", "name": "Altın (ons)", "unit": "ons", "qty_digits": 6, "buy_date": "2026-07-03", "buy_price": 4000.0, "approx": false, "units": 0.25, "held_units": 0.25, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1083.2925}, {"sym": "XAGUSD", "cat": "metal", "name": "Gümüş (ons)", "unit": "ons", "qty_digits": 6, "buy_date": "2026-06-25", "buy_price": 62.0, "approx": false, "units": 16.129032258064516, "held_units": 16.129032258064516, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1060.5725806451612}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 1. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-07-09", "buy_price": 62500.0, "approx": false, "units": 0.016, "held_units": 0.0, "sold_units": 0.016, "sell_date": "2026-07-23", "sell_price": 65123.02, "sell_frac": 1.0, "realized_usd": 1041.96832, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1041.96832}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 2. tranş (yeni giriş)", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-07-27", "buy_price": 64900.0, "approx": false, "units": 0.015408320493066256, "held_units": 0.015408320493066256, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1326.6565485362096}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 3. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-08-24", "buy_price": 68000.0, "approx": false, "units": 0.014705882352941176, "held_units": 0.014705882352941176, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1266.1766176470587}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 4. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-09-20", "buy_price": 82500.0, "approx": false, "units": 0.012121212121212121, "held_units": 0.012121212121212121, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1043.6364848484848}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 1. tranş", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-07-16", "buy_price": 1850.0, "approx": true, "units": 0.5405405405405406, "held_units": 0.0, "sold_units": 0.5405405405405406, "sell_date": "2026-07-23", "sell_price": 1903.1, "sell_frac": 1.0, "realized_usd": 1028.7027027027027, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1028.7027027027027}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 2. tranş (yeni giriş)", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-07-27", "buy_price": 1920.0, "approx": true, "units": 0.5208333333333334, "held_units": 0.5208333333333334, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1437.6197916666667}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 3. tranş", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-08-20", "buy_price": 2150.0, "approx": false, "units": 0.46511627906976744, "held_units": 0.46511627906976744, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1283.827906976744}, {"sym": "XRP-USD", "cat": "kripto", "name": "XRP", "unit": "XRP", "qty_digits": 3, "buy_date": "2026-08-24", "buy_price": 1.48, "approx": false, "units": 675.6756756756757, "held_units": 675.6756756756757, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1043.6486486486488}, {"sym": "NVDA", "cat": "hisse", "name": "Nvidia · 1. tranş", "unit": "pay", "qty_digits": 4, "buy_date": "2026-07-09", "buy_price": 202.0, "approx": false, "units": 4.9504950495049505, "held_units": 0.0, "sold_units": 4.9504950495049505, "sell_date": "2026-07-23", "sell_price": 208.58, "sell_frac": 1.0, "realized_usd": 1032.5742574257426, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1032.5742574257426}, {"sym": "NVDA", "cat": "hisse", "name": "Nvidia · 2. tranş (yeni giriş)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-26", "buy_price": 210.5, "approx": false, "units": 4.750593824228028, "held_units": 4.750593824228028, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1080.190023752969}, {"sym": "SOXX", "cat": "hisse", "name": "SOX ETF (yarı iletken)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-07-30", "buy_price": 502.0, "approx": false, "units": 1.9920318725099602, "held_units": 1.9920318725099602, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1114.2231075697212}, {"sym": "GOOGL", "cat": "hisse", "name": "Alphabet / Google", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-03", "buy_price": 370.0, "approx": false, "units": 2.7027027027027026, "held_units": 2.7027027027027026, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 959.3783783783784}, {"sym": "CLOU", "cat": "hisse", "name": "CLOU ETF (bulut bilişim)", "unit": "pay", "qty_digits": 3, "buy_date": "2026-08-03", "buy_price": 25.9, "approx": false, "units": 38.610038610038615, "held_units": 0.0, "sold_units": 38.610038610038615, "sell_date": "2026-08-13", "sell_price": 28.09, "sell_frac": 1.0, "realized_usd": 1084.5559845559847, "invested": 1000.0, "status": "SATILDI 13.08", "status_class": "closed", "snapshot_value_usd": 1084.5559845559847}, {"sym": "GRID", "cat": "hisse", "name": "GRID ETF (enerji altyapısı)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 188.0, "approx": false, "units": 5.319148936170213, "held_units": 5.319148936170213, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 963.1914893617022}, {"sym": "CIBR", "cat": "hisse", "name": "CIBR ETF (siber güvenlik)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 100.0, "approx": false, "units": 10.0, "held_units": 10.0, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1030.9}, {"sym": "ARTY", "cat": "hisse", "name": "ARTY ETF (AI/robotik altyapı)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 77.0, "approx": false, "units": 12.987012987012987, "held_units": 12.987012987012987, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1020.3896103896103}, {"sym": "SKYY", "cat": "hisse", "name": "SKYY ETF (CLOU yerine)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 165.02, "approx": true, "units": 6.059871530723548, "held_units": 6.059871530723548, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1019.3309901830081}, {"sym": "RKLB", "cat": "hisse", "name": "Rocket Lab", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-17", "buy_price": 83.0, "approx": false, "units": 12.048192771084338, "held_units": 6.024096385542169, "sold_units": 6.024096385542169, "sell_date": "2026-09-16", "sell_price": 63.56, "sell_frac": 0.5, "realized_usd": 382.89156626506025, "invested": 500.0, "status": "%50 SATILDI 16.09", "status_class": "partial", "snapshot_value_usd": 421.0240963855422}, {"sym": "TLT", "cat": "hisse", "name": "TLT ETF (uzun vadeli tahvil)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-24", "buy_price": 82.0, "approx": false, "units": 12.195121951219512, "held_units": 12.195121951219512, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 997.560975609756}, {"sym": "SKHY", "cat": "hisse", "name": "SK Hynix", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-26", "buy_price": 164.0, "approx": false, "units": 6.097560975609756, "held_units": 6.097560975609756, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1151.5853658536587}, {"sym": "QQQ", "cat": "uzunvade", "name": "QQQ ETF (Nasdaq 100)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-01", "buy_price": 688.0, "approx": false, "units": 1.4534883720930232, "held_units": 1.4534883720930232, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1077.718023255814}, {"sym": "SPCX", "cat": "uzunvade", "name": "SpaceX", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-01", "buy_price": 112.0, "approx": false, "units": 8.928571428571429, "held_units": 8.928571428571429, "sold_units": 0.0, "sell_date": null, "sell_price": null, "sell_frac": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1355.8035714285713}], "totals": {"invested": 24000.0, "open": 21736.726711137704, "realized": 4570.692830949491, "grand": 26307.419542087195}};
+const LIVE = true;
+
+const TRADINGVIEW = "https://scanner.tradingview.com/global/scan";
+const BINANCE = "https://data-api.binance.vision/api/v3/ticker/price";
+
+/* 10 saniye, ve bu ölçülmüş bir sayı değil devralınmış bir ders: XAU-Guess'in
+   frontend'i aynı beslemeyi örnekleyip her serinin 11-22 saniyede bir yeni
+   değer ürettiğini ölçtü. Bundan hızlı sormak bilgi değil gecikme satın alır,
+   üstelik burada belgelenmemiş bir uç noktaya. */
+const REFRESH_MS = 10000;
+const BACKOFF = [10000, 20000, 40000, 60000];
+
+let prices = Object.assign({}, DATA.snapshot_prices);
+let usdtry = DATA.usdtry;
+let painted = {};           // son basılan yuvarlanmis fiyat -> tick parlamasi icin
+let lastOk = null;          // son basarili cekim zamani
+let failures = 0;
+let source = null;
+let delayNote = "";
+let timer = null;
+
+const fmtUSD0 = (n) => "$" + n.toLocaleString("tr-TR", {maximumFractionDigits:0});
+const fmtUSD2 = (n) => "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtTRY = (n) => n.toLocaleString("tr-TR", {maximumFractionDigits:0}) + " ₺";
+const fmtQty = (n, d) => n.toLocaleString("tr-TR", {minimumFractionDigits:d, maximumFractionDigits:d});
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Fiyat hassasiyeti buyuklukten turetiliyor: XRP'yi 2 haneye yuvarlamak
+   gunluk hareketinin tamamini yok eder, altini 4 haneye basmak ise gurultu. */
+function fmtPrice(n){
+  if (n >= 1000) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (n >= 10) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
+  return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4});
+}
+
+function barHTML(pct){
+  const clamped = Math.max(0, Math.min(100, pct));
+  const cls = pct >= 50 ? "g" : "l";
+  return `<div class="bar-track"><div class="bar-mark"></div><div class="bar-fill ${cls}" style="width:${clamped}%"></div></div>`;
+}
+
+function rowHTML(r){
+  const cur = prices[r.sym];
+  const closed = r.status_class === "closed";
+  // Kapanmis tranşın degeri satis aninda dondu; acik olan canli fiyatla deger bulur.
+  const value = closed ? r.realized_usd : r.held_units * cur;
+  const gain = value - r.invested;
+  const gainPct = gain / r.invested * 100;
+  const gcls = gain >= 0 ? "g" : "l";
+  /* Kapanmis bir tranşın guncel fiyatinin yaninda "alistan bu yana %X" basmak
+     iki farkli referansli yuzdeyi yan yana koymaktir: tranş 65.123'ten satildi
+     ve +%4,2 kazandi, ama fiyat o gunden beri yukselmeye devam ettigi icin
+     alis fiyatina gore +%37 gorunuyor. Ikisi ayni satirda, ayni renkte, ayni
+     bicimde durunca okuyucu ikincisini tranşın kazanci sanar. Kapanmis satirda
+     guncel fiyat bilgi olarak kalir, yuzde basilmaz. */
+  const priceGain = closed ? null : (cur - r.buy_price) / r.buy_price * 100;
+  const pgcls = priceGain !== null && priceGain >= 0 ? "g" : "l";
+  const priceKey = r.sym;
+  const shown = fmtPrice(cur);
+  const flash = painted[priceKey] !== undefined && painted[priceKey] !== shown ? " tick" : "";
+
+  const buyPrice = (r.approx ? "~" : "") + fmtPrice(r.buy_price);
+  const qty = fmtQty(closed ? r.units : r.held_units, r.qty_digits) + " " + r.unit
+              + (r.status_class === "partial" ? " (kalan)" : "");
+
+  const sellBlock = r.sell_price
+    ? `<div class="val-usd mono">${fmtPrice(r.sell_price)}</div>
+       <div class="val-try mono">${fmtQty(r.sold_units, r.qty_digits)} ${r.unit}</div>`
+    : `<span style="color:var(--ink-faint)">—</span>`;
+
+  return `<tr>
+    <td><span class="asset-name">${esc(r.name)}</span><span class="asset-ticker">${esc(r.sym)}</span></td>
+    <td class="mono">${trDate(r.buy_date)}</td>
+    <td class="right mono">${buyPrice}</td>
+    <td class="right mono">${qty}</td>
+    <td class="right"><div class="val-usd mono${flash}">${shown}</div>
+      ${priceGain === null ? "" : `<div class="pct ${pgcls}">${priceGain >= 0 ? "+" : ""}${priceGain.toFixed(1)}%</div>`}</td>
+    <td><span class="badge ${r.status_class}">${esc(r.status)}</span></td>
+    <td class="right">${sellBlock}</td>
+    <td class="right">
+      <div class="val-usd mono">${fmtUSD2(value)}</div>
+      <div class="val-try mono">${fmtTRY(value * usdtry)}</div>
+      <div class="pct ${gcls}">${gain >= 0 ? "+" : ""}${gainPct.toFixed(1)}%</div>
+      ${barHTML(Math.min(100, value / (r.invested * 2) * 100))}
+    </td>
+  </tr>`;
+}
+
+function trDate(iso){
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+function render(){
+  const cats = {metal: [], kripto: [], hisse: [], uzunvade: []};
+  DATA.rows.forEach((r) => cats[r.cat].push(r));
+
+  let totalOpen = 0, totalReal = 0;
+  const catTotals = {};
+  for (const [cat, list] of Object.entries(cats)) {
+    document.getElementById("tbl-" + cat).innerHTML = list.map(rowHTML).join("");
+    let open = 0, real = 0;
+    list.forEach((r) => {
+      if (r.status_class === "closed") real += r.realized_usd;
+      else { open += r.held_units * prices[r.sym]; real += r.realized_usd; }
+    });
+    catTotals[cat] = {open, real};
+    totalOpen += open; totalReal += real;
+  }
+
+  document.getElementById("tot-metal").innerHTML =
+    `<span>güncel: <b>${fmtUSD0(catTotals.metal.open)}</b> (${fmtTRY(catTotals.metal.open * usdtry)})</span>`;
+  for (const cat of ["kripto", "hisse", "uzunvade"]) {
+    const t = catTotals[cat];
+    // Uzun vade defterinde hic satis olmadi; "realize: $0" basmak olmayan bir
+    // kolonu varmis gibi gosterir, o yuzden yalnizca varsa yazilir.
+    document.getElementById("tot-" + cat).innerHTML = t.real > 0
+      ? `<span>açık: <b>${fmtUSD0(t.open)}</b> &middot; realize: <b>${fmtUSD0(t.real)}</b> `
+        + `&middot; toplam ${fmtTRY((t.open + t.real) * usdtry)}</span>`
+      : `<span>güncel: <b>${fmtUSD0(t.open)}</b> (${fmtTRY(t.open * usdtry)})</span>`;
+  }
+
+  const invested = DATA.totals.invested;
+  const grand = totalOpen + totalReal;
+  document.getElementById("s-invested").textContent = fmtUSD0(invested);
+  document.getElementById("s-invested-sub").textContent = `${DATA.rows.length} tranş × 1.000 $`;
+  document.getElementById("s-open").textContent = fmtUSD0(totalOpen);
+  document.getElementById("s-open-try").textContent = fmtTRY(totalOpen * usdtry);
+  document.getElementById("s-real").textContent = fmtUSD0(totalReal);
+  document.getElementById("s-real-try").textContent = fmtTRY(totalReal * usdtry);
+  document.getElementById("s-grand").textContent = fmtUSD0(grand);
+  const pct = (grand - invested) / invested * 100;
+  document.getElementById("s-grand-sub").textContent =
+    `${fmtTRY(grand * usdtry)} · USD bazında ${pct >= 0 ? "+" : ""}%${Math.abs(pct).toFixed(1).replace(".", ",")}`
+    + ` · USDTRY ${usdtry.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4})}`;
+
+  const closedCount = DATA.rows.filter((r) => r.status_class !== "open").length;
+  document.getElementById("m-tranche").textContent = DATA.rows.length;
+  document.getElementById("m-closed").textContent = closedCount;
+  document.getElementById("m-ledger").textContent = DATA.snapshot_date;
+
+  DATA.rows.forEach((r) => { painted[r.sym] = fmtPrice(prices[r.sym]); });
+}
+
+function setStatus(){
+  const dot = document.getElementById("livedot");
+  const text = document.getElementById("livetext");
+  const delay = document.getElementById("livedelay");
+  dot.className = "livedot" + (lastOk === null ? " pending" : failures > 0 ? " stale" : "");
+  if (lastOk === null) {
+    text.textContent = `Canlı fiyat alınamadı — ${DATA.snapshot_date} anlık görüntüsü gösteriliyor`;
+  } else {
+    const t = lastOk.toLocaleTimeString("tr-TR");
+    text.textContent = failures > 0
+      ? `Son güncelleme ${t} — tazelenemedi, ${failures}. deneme`
+      : `Canlı · son güncelleme ${t} · ${source}`;
+  }
+  delay.textContent = delayNote;
+}
+
+/* TradingView'in scanner'i BELGELENMEMIS bir uc nokta ve istegin sekli kritik:
+   preflight yaniti Access-Control-Allow-Headers olarak yalnizca Referer,Accept
+   donuyor -- content-type yok -- yani normal bir application/json POST tarayici
+   tarafindan gonderilmeden reddedilir. Ayni govdeyi text/plain ile yollamak
+   istegi "simple request" yapar, preflight gerekmez ve yanit allow-origin
+   basligiyla gelir. Bunu JSON'a cevirmek curl'de calismaya devam ederken
+   tarayicida sessizce kirar. (XAU-Guess/frontend/app.js'de olculmus ders.) */
+async function fetchTradingView(){
+  const tickers = Object.values(DATA.tv_tickers).concat([DATA.tv_usdtry]);
+  const response = await fetch(TRADINGVIEW, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain;charset=UTF-8"},
+    body: JSON.stringify({symbols: {tickers}, columns: ["close", "update_mode"]}),
+  });
+  if (!response.ok) throw new Error("tv " + response.status);
+  const rows = (await response.json()).data ?? [];
+  const bySymbol = new Map(rows.map((r) => [r.s, r.d]));
+  const out = {};
+  const modes = {};
+  for (const [sym, ticker] of Object.entries(DATA.tv_tickers)) {
+    const cell = bySymbol.get(ticker);
+    const v = cell ? Number(cell[0]) : NaN;
+    if (Number.isFinite(v) && v > 0) { out[sym] = v; modes[sym] = cell[1]; }
+  }
+  const fx = bySymbol.get(DATA.tv_usdtry);
+  const fxv = fx ? Number(fx[0]) : NaN;
+  if (Object.keys(out).length === 0) throw new Error("tv bos");
+  return {prices: out, usdtry: Number.isFinite(fxv) && fxv > 0 ? fxv : null, modes};
+}
+
+/* Kripto icin belgelenmis yedek. Metaller ve hisseler icin muadili yok --
+   onlar tazelenemezse en son bilinen degerde kalir ve serit bunu soyler. */
+async function fetchBinance(){
+  const out = {};
+  for (const [sym, pair] of Object.entries(DATA.binance_fallback)) {
+    try {
+      const r = await fetch(`${BINANCE}?symbol=${pair}`);
+      if (!r.ok) continue;
+      const p = Number((await r.json()).price);
+      if (Number.isFinite(p) && p > 0) out[sym] = p;
+    } catch { /* tek bir cift dusunce digerleri yine de alinir */ }
+  }
+  if (Object.keys(out).length === 0) throw new Error("binance bos");
+  return out;
+}
+
+/* ABD borsasi 09:30-16:00 New York saatiyle acik. Kapaliyken "15 dk gecikmeli"
+   demek yaniltici: gecikemeyeceginiz bir seansin gecikmesi yoktur, ekrandaki
+   sayi son kapanistir ve dogrudur. Saat New York'un kendi saatinden okunuyor,
+   yerel saatten ofset hesaplanmiyor -- yaz saati gecisinde sessizce kayardi. */
+function usMarketOpen(){
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", weekday: "short", hour: "2-digit",
+    minute: "2-digit", hour12: false,
+  }).formatToParts(new Date());
+  const get = (t) => parts.find((p) => p.type === t)?.value;
+  const day = get("weekday");
+  if (day === "Sat" || day === "Sun") return false;
+  const mins = Number(get("hour")) * 60 + Number(get("minute"));
+  return mins >= 570 && mins < 960;   // 09:30 - 16:00
+}
+
+function describeDelays(modes){
+  // "delayed_streaming_900" -> 15 dk. Serit bunu beslemenin kendi bildirdigi
+  // degerden yaziyor; sabit bir metin, besleme degistiginde sessizce yanlis olur.
+  const open = usMarketOpen();
+  const seen = new Set();
+  const parts = [];
+  for (const [sym, mode] of Object.entries(modes)) {
+    const row = DATA.rows.find((r) => r.sym === sym);
+    if (!row) continue;
+    const m = /delayed_streaming_(\d+)/.exec(mode || "");
+    const isUS = (DATA.us_session_symbols || []).includes(sym);
+    let label;
+    if (!m) label = "gerçek zamanlı";
+    else if (isUS && !open) label = "borsa kapalı · son kapanış";
+    else label = `${Math.round(Number(m[1]) / 60)} dk gecikmeli`;
+    const names = {metal: "Metaller", kripto: "Kripto", hisse: "ABD hisse/ETF",
+                   uzunvade: "Uzun vade"};
+    const line = `${names[row.cat]}: ${label}`;
+    if (!seen.has(line)) { seen.add(line); parts.push(line); }
+  }
+  return parts.join(" · ");
+}
+
+async function tick(){
+  if (document.hidden) { schedule(REFRESH_MS); return; }
+  try {
+    const tv = await fetchTradingView();
+    prices = Object.assign({}, prices, tv.prices);
+    if (tv.usdtry) usdtry = tv.usdtry;
+    delayNote = describeDelays(tv.modes);
+    source = "TradingView";
+    failures = 0;
+    lastOk = new Date();
+  } catch {
+    try {
+      const b = await fetchBinance();
+      prices = Object.assign({}, prices, b);
+      source = "Binance (yalnızca kripto)";
+      delayNote = "Metal ve hisse fiyatları tazelenemedi";
+      failures = 0;
+      lastOk = new Date();
+    } catch {
+      failures += 1;
+    }
+  }
+  render();
+  setStatus();
+  schedule(failures > 0 ? BACKOFF[Math.min(failures - 1, BACKOFF.length - 1)] : REFRESH_MS);
+}
+
+function schedule(ms){
+  clearTimeout(timer);
+  timer = setTimeout(tick, ms);
+}
+
+const snapEl = document.getElementById("snapdate");
+if (snapEl) snapEl.textContent = DATA.snapshot_date + " anlık görüntüsü";
+render();
+
+/* Statik surumde ag cagrisi HIC yapilmaz: sayfa anlik goruntu fiyatlariyla
+   cizilir ve orada kalir. Yayinlanan artifact bu surumdur cunku orada sayfanin
+   disariya istek atmasi zaten engelli -- canli kodu oraya koymak, hicbir zaman
+   basarili olmayacak bir cagriyi her 10 saniyede bir denemek olurdu. */
+if (LIVE) {
+  setStatus();
+  tick();
+  // Sekmeye donuldugunde beklemeden tazele -- gizliyken atlanan turlar yuzunden
+  // ekranda eski bir saat kalmasin.
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+}
+</script>
