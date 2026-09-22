@@ -152,6 +152,14 @@
   .livedot.stale{ background:var(--loss); box-shadow:0 0 0 3px var(--loss-soft); }
   .livedot.pending{ background:var(--ink-faint); box-shadow:0 0 0 3px var(--surface-2); }
   .livesep{ color:var(--ink-faint); }
+  /* Fiyatin ustundeki kaynak etiketi: sayinin hangi sembolden ve hangi
+     tazelikte geldigi. Ust seritteki ozet kategori bazinda; bu satir bazinda,
+     cunku ayni tabloda spot metal, Binance kriptosu ve gecikmeli ABD hissesi
+     yan yana duruyor. */
+  .src{
+    font-size:10px; color:var(--ink-faint); letter-spacing:.02em;
+    font-family:'IBM Plex Mono',monospace; margin-bottom:2px; white-space:nowrap;
+  }
   .tick{ animation:tick .55s ease; }
   @keyframes tick{ from{ background:var(--accent-soft); } to{ background:transparent; } }
   @media (prefers-reduced-motion:reduce){ .tick{ animation:none; } }
@@ -312,6 +320,10 @@ const BACKOFF = [10000, 20000, 40000, 60000];
 let prices = Object.assign({}, DATA.snapshot_prices);
 let usdtry = DATA.usdtry;
 let painted = {};           // son basılan yuvarlanmis fiyat -> tick parlamasi icin
+/* Ekrandaki her fiyatin nereden geldigi: {sym: {src, mode}}. Tahmin degil,
+   cevabin kendisinden okunuyor -- Binance'e dusuldugunde o satir da Binance
+   yazar, yoksa sayfa TradingView'den geldigini iddia edip durur. */
+let priceMeta = {};
 let lastOk = null;          // son basarili cekim zamani
 let failures = 0;
 let source = null;
@@ -330,6 +342,20 @@ function fmtPrice(n){
   if (n >= 1000) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
   if (n >= 10) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
   return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4});
+}
+
+/* Fiyatin ustunde duran kucuk kaynak satiri: hangi sembolden geldigi ve ne
+   kadar taze oldugu. Statik surumde tazelik yok (sayfanin tamami bir anlik
+   goruntu, tarihi basligin altinda yaziyor), o yuzden yalnizca sembol basilir. */
+function srcLabel(sym){
+  const meta = priceMeta[sym];
+  const ticker = (meta && meta.src) || DATA.tv_tickers[sym] || "";
+  if (!LIVE || !meta) return ticker;
+  const m = /delayed_streaming_(\d+)/.exec(meta.mode || "");
+  if (!m) return `${ticker} · canlı`;
+  const isUS = (DATA.us_session_symbols || []).includes(sym);
+  if (isUS && !usMarketOpen()) return `${ticker} · kapanış`;
+  return `${ticker} · ${Math.round(Number(m[1]) / 60)} dk`;
 }
 
 function barHTML(pct){
@@ -372,7 +398,8 @@ function rowHTML(r){
     <td class="mono">${trDate(r.buy_date)}</td>
     <td class="right mono">${buyPrice}</td>
     <td class="right mono">${qty}</td>
-    <td class="right"><div class="val-usd mono${flash}">${shown}</div>
+    <td class="right"><div class="src">${esc(srcLabel(r.sym))}</div>
+      <div class="val-usd mono${flash}">${shown}</div>
       ${priceGain === null ? "" : `<div class="pct ${pgcls}">${priceGain >= 0 ? "+" : ""}${priceGain.toFixed(1)}%</div>`}</td>
     <td><span class="badge ${r.status_class}">${esc(r.status)}</span></td>
     <td class="right">${sellBlock}</td>
@@ -476,15 +503,20 @@ async function fetchTradingView(){
   const bySymbol = new Map(rows.map((r) => [r.s, r.d]));
   const out = {};
   const modes = {};
+  const meta = {};
   for (const [sym, ticker] of Object.entries(DATA.tv_tickers)) {
     const cell = bySymbol.get(ticker);
     const v = cell ? Number(cell[0]) : NaN;
-    if (Number.isFinite(v) && v > 0) { out[sym] = v; modes[sym] = cell[1]; }
+    if (Number.isFinite(v) && v > 0) {
+      out[sym] = v;
+      modes[sym] = cell[1];
+      meta[sym] = {src: ticker, mode: cell[1]};
+    }
   }
   const fx = bySymbol.get(DATA.tv_usdtry);
   const fxv = fx ? Number(fx[0]) : NaN;
   if (Object.keys(out).length === 0) throw new Error("tv bos");
-  return {prices: out, usdtry: Number.isFinite(fxv) && fxv > 0 ? fxv : null, modes};
+  return {prices: out, usdtry: Number.isFinite(fxv) && fxv > 0 ? fxv : null, modes, meta};
 }
 
 /* Kripto icin belgelenmis yedek. Metaller ve hisseler icin muadili yok --
@@ -496,7 +528,7 @@ async function fetchBinance(){
       const r = await fetch(`${BINANCE}?symbol=${pair}`);
       if (!r.ok) continue;
       const p = Number((await r.json()).price);
-      if (Number.isFinite(p) && p > 0) out[sym] = p;
+      if (Number.isFinite(p) && p > 0) out[sym] = {price: p, src: "BINANCE:" + pair};
     } catch { /* tek bir cift dusunce digerleri yine de alinir */ }
   }
   if (Object.keys(out).length === 0) throw new Error("binance bos");
@@ -547,6 +579,7 @@ async function tick(){
   try {
     const tv = await fetchTradingView();
     prices = Object.assign({}, prices, tv.prices);
+    priceMeta = Object.assign({}, priceMeta, tv.meta);
     if (tv.usdtry) usdtry = tv.usdtry;
     delayNote = describeDelays(tv.modes);
     source = "TradingView";
@@ -555,7 +588,10 @@ async function tick(){
   } catch {
     try {
       const b = await fetchBinance();
-      prices = Object.assign({}, prices, b);
+      for (const [sym, v] of Object.entries(b)) {
+        prices[sym] = v.price;
+        priceMeta[sym] = {src: v.src, mode: "streaming"};
+      }
       source = "Binance (yalnızca kripto)";
       delayNote = "Metal ve hisse fiyatları tazelenemedi";
       failures = 0;
