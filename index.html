@@ -174,8 +174,24 @@
   .card.pad{ padding:20px 22px; }
 
   /* ---- track record ---- */
-  .chart-wrap{ width:100%; }
+  .chart-wrap{ width:100%; position:relative; }
   .chart-wrap svg{ display:block; width:100%; height:auto; }
+  /* Imlecin altindaki degerler AYRI bir kutuda, grafigin altindaki ozet satiri
+     yerinde duruyor. XAU-Guess'te olculmus ders: nisangah altindaki sayilari
+     yeniden yazinca okuyucunun az once okudugu deger imlec uzerinden gecerken
+     degisiyor ve kartta akilda tutulacak tek bir okuma kalmiyor. Burada ozet
+     her zaman SON gunu yazar; kutu, sorulan gunu. */
+  .chart-tip{
+    position:absolute; pointer-events:none; z-index:2;
+    background:var(--surface); border:1px solid var(--border); border-radius:11px;
+    box-shadow:var(--shadow-lg); padding:9px 11px; font-size:12px; min-width:176px;
+  }
+  .chart-tip .d{ font-weight:700; color:var(--ink); font-size:11.5px; margin-bottom:6px; }
+  .chart-tip .r{ display:flex; align-items:center; gap:8px; margin-top:3px; color:var(--ink-soft); }
+  .chart-tip .r .sw{ width:10px; height:3px; border-radius:2px; flex:none; }
+  .chart-tip .r .nm{ flex:1; white-space:nowrap; }
+  .chart-tip .r b{ color:var(--ink); font-family:'IBM Plex Mono',monospace; font-weight:700; }
+  .chart-tip .r .pc{ margin:0; font-size:11px; min-width:54px; text-align:right; }
   .chart-foot{
     display:flex; flex-wrap:wrap; gap:8px 24px; margin-top:14px;
     padding-top:14px; border-top:1px solid var(--border-soft); font-size:12.5px;
@@ -1090,6 +1106,80 @@ function drawChart(){
   wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img"
     aria-label="Portföyün ilk alımdan bugüne değeri ve kıyasları">${
       gridEls.join("")}${paths.join("")}${labels}</svg>`;
+
+  /* Imlecin durdugu gunu okutan katman. Alttaki ozet satiri DEGISMIYOR: o her
+     zaman SON gunu yazar, bu kutu sorulan gunu. Ikisini birlestirip ozeti
+     imlecle yeniden yazmak, okuyucunun az once okudugu sayiyi imlec uzerinden
+     gecerken elinden alir -- XAU-Guess'te olculmus ve kaldirilmis davranis.
+     Kutu additif oldugu surece sorun yok. */
+  const svgEl = wrap.querySelector("svg");
+  const NS = "http://www.w3.org/2000/svg";
+  const cursor = document.createElementNS(NS, "line");
+  cursor.setAttribute("y1", padT);
+  cursor.setAttribute("y2", H - padB);
+  cursor.setAttribute("stroke", "var(--ink-faint)");
+  cursor.setAttribute("stroke-width", "1");
+  cursor.setAttribute("stroke-dasharray", "3 3");
+  cursor.style.display = "none";
+  svgEl.appendChild(cursor);
+  const dots = series.map((s) => {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("r", "3.6");
+    c.setAttribute("fill", s.colour);
+    c.setAttribute("stroke", "var(--surface)");
+    c.setAttribute("stroke-width", "1.5");
+    c.style.display = "none";
+    svgEl.appendChild(c);
+    return c;
+  });
+  const tip = document.createElement("div");
+  tip.className = "chart-tip";
+  tip.hidden = true;
+  wrap.appendChild(tip);
+
+  function showAt(clientX){
+    const box = svgEl.getBoundingClientRect();
+    if (!box.width) return;
+    // Ekran pikselinden viewBox koordinatina: SVG width:100% ile olceklendigi
+    // icin ikisi ayni degil.
+    const sx = (clientX - box.left) * (W / box.width);
+    let i = Math.round((sx - padL) / (W - padL - padR) * (pts.length - 1));
+    i = Math.max(0, Math.min(pts.length - 1, i));
+    const p = pts[i];
+    cursor.setAttribute("x1", x(i).toFixed(1));
+    cursor.setAttribute("x2", x(i).toFixed(1));
+    cursor.style.display = "";
+    series.forEach((s, k) => {
+      dots[k].setAttribute("cx", x(i).toFixed(1));
+      dots[k].setAttribute("cy", y(ret(p, s.key)).toFixed(1));
+      dots[k].style.display = "";
+    });
+    tip.innerHTML = `<div class="d">${trDate(p.d)}</div>` + series.slice().reverse().map((s) =>
+      `<div class="r"><span class="sw" style="background:${s.colour}"></span>` +
+      `<span class="nm">${s.label}</span><b>${fmtUSD0(p[s.key])}</b>` +
+      (s.key === "inv" ? "" :
+        `<span class="pct pc ${ret(p, s.key) >= 0 ? "g" : "l"}">${pctTxt(ret(p, s.key), 1)}</span>`) +
+      `</div>`).join("");
+    tip.hidden = false;
+    // Kutu her zaman grafigin icinde kalsin, sag kenarda tasmasin.
+    const px = x(i) / W * box.width;
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(box.width - tw, px + 14)) + "px";
+    tip.style.top = "8px";
+  }
+  function hideTip(){
+    cursor.style.display = "none";
+    dots.forEach((d) => { d.style.display = "none"; });
+    tip.hidden = true;
+  }
+  // pointer* olaylari fare ve dokunmayi birlikte karsiliyor. preventDefault
+  // YOK: telefonda grafigin uzerinden parmakla kaydirmak sayfayi kaydirmaya
+  // devam etsin, grafik onu yutmasin.
+  svgEl.addEventListener("pointermove", (e) => showAt(e.clientX));
+  svgEl.addEventListener("pointerdown", (e) => showAt(e.clientX));
+  svgEl.addEventListener("pointerleave", hideTip);
+  svgEl.addEventListener("pointercancel", hideTip);
+  svgEl.addEventListener("pointerup", hideTip);
 
   const last = pts[pts.length - 1];
   document.getElementById("chart-foot").innerHTML = series.slice().reverse().map((s) =>
