@@ -295,12 +295,40 @@
   .val-try{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
 
   /* ---- notes ---- */
+  /* ACIKLAMALAR katlanabilir, geri kalan her sey acik kalir. Ayrim su: bu
+     bloklar icerigin KENDISI degil, icerigin tarifi -- yontem, varsayim,
+     duzeltme gunlugu. Rakamlar, tablolar, grafik ve uyarilar hicbir zaman
+     katlanmaz; bir uyariyi tiklamanin arkasina koymak onu yok saymaktir.
+     (Ayni kural XAU-Guess'te de gecerli.)
+
+     <details> kullaniliyor, JS'li bir acilir-kapanir degil: klavyeyle
+     calisiyor, ekran okuyucu durumunu soyluyor, JS calismasa da aciliyor. */
   .notes{
     background:var(--surface); border:1px solid var(--border); border-radius:18px;
-    padding:22px 24px; box-shadow:var(--shadow);
+    box-shadow:var(--shadow);
     font-size:13.5px; line-height:1.72; color:var(--ink-soft);
   }
   .notes + .notes{ margin-top:12px; }
+  details.notes > summary{
+    list-style:none; cursor:pointer; padding:17px 22px;
+    display:flex; align-items:baseline; gap:11px; flex-wrap:wrap;
+  }
+  details.notes > summary::-webkit-details-marker{ display:none; }
+  details.notes > summary:hover .sum-title{ color:var(--accent-ink); }
+  details.notes > summary:focus-visible{
+    outline:2px solid var(--accent); outline-offset:-2px; border-radius:18px;
+  }
+  .chev{
+    flex:none; width:9px; height:9px; border-right:2px solid var(--ink-faint);
+    border-bottom:2px solid var(--ink-faint); transform:rotate(-45deg);
+    transition:transform .18s ease; position:relative; top:-2px;
+  }
+  details[open] > summary .chev{ transform:rotate(45deg); top:-4px; }
+  @media (prefers-reduced-motion:reduce){ .chev{ transition:none; } }
+  .sum-title{ font-size:15px; color:var(--ink); font-weight:700; margin:0; letter-spacing:-.01em; }
+  .sum-hint{ font-size:12.5px; color:var(--ink-faint); flex:1; min-width:0; }
+  details.notes[open] > summary{ border-bottom:1px solid var(--border-soft); }
+  .note-body{ padding:15px 22px 20px; }
   .notes h3{ font-size:15px; color:var(--ink); margin-bottom:4px; font-weight:700; }
   .notes .note-lead{ font-size:12.5px; color:var(--ink-faint); margin:0 0 12px; }
   .notes ul{ margin:0; padding-left:20px; }
@@ -572,8 +600,13 @@
   </section>
 
 
-  <section class="notes">
-    <h3>Bu sayfa canlı derken ne kastediliyor</h3>
+  <details class="notes">
+    <summary>
+      <span class="chev"></span>
+      <h3 class="sum-title">Bu sayfa canlı derken ne kastediliyor</h3>
+      <span class="sum-hint">neyin tazelendiği, neyin sabit olduğu, gecikmeler</span>
+    </summary>
+    <div class="note-body">
     <ul>
       <li><b>Canlı olan:</b> yalnızca <b>güncel fiyatlar</b> ve onlardan türeyen her şey — pozisyon
         değerleri, TL karşılıkları, yüzdeler, toplamlar. Fiyatlar TradingView'in tarayıcıdan
@@ -596,11 +629,16 @@
       <li>Sekme arkaplandayken istek atılmaz; hata olursa aralık kademeli olarak uzar
         (10 → 20 → 40 → 60 sn), ilk başarıda sıfırlanır.</li>
     </ul>
-  </section>
-  <section class="notes">
-    <h3>Yöntem, kapsam ve varsayımlar</h3>
-    <p class="note-lead">Bir cümlenin ne zaman deftere satır olduğu, neyin dışarıda kaldığı ve
-      hangi sayının neye göre hesaplandığı.</p>
+    </div>
+  </details>
+  <details class="notes">
+    <summary>
+      <span class="chev"></span>
+      <h3 class="sum-title">Yöntem, kapsam ve varsayımlar</h3>
+      <span class="sum-hint">bir cümle ne zaman deftere satır olur, neler dışarıda kaldı,
+        hangi sayı neye göre hesaplandı</span>
+    </summary>
+    <div class="note-body">
     <ul>
       <li><b>Kapsam:</b> yalnızca konuşmacının geçmiş zamanla "aldık / alım yaptık / sattık / elden çıkardım"
         dediği, pencere içinde (23 Haz – 21 Eyl) gerçekleşen işlemler sayıldı. Pencereden önce açılmış ve hiç
@@ -657,11 +695,17 @@
         YouTube'un otomatik Türkçe altyazısından okundu; sayılar bazen bozuk geliyor (baştaki binler hanesinin
         düşmesi gibi) ve bu durumlarda gerçek piyasa verisiyle çapraz kontrol edildi.</li>
     </ul>
-  </section>
+    </div>
+  </details>
 
-  <section class="notes">
-    <h3>Düzeltme geçmişi</h3>
-    <p class="note-lead">Bu defterde bulunan her hata, bulunduğu gün, sebebiyle birlikte. En yeni üstte.</p>
+  <details class="notes">
+    <summary>
+      <span class="chev"></span>
+      <h3 class="sum-title">Düzeltme geçmişi</h3>
+      <span class="sum-hint">bu defterde bulunan her hata, bulunduğu gün, sebebiyle birlikte —
+        en yeni üstte</span>
+    </summary>
+    <div class="note-body">
     <ul>
       <li><span class="when">23 Eyl 2026</span><b>Bitcoin 4. tranşın tarihi 20 Eylül'den 21 Eylül'e çekildi.</b>
         Konuşmacı 21 Eylül videosunda "82.500 dolar seviyesi kırıldı ve son olarak 3ünc kademe alımı da
@@ -703,7 +747,8 @@
         tarih tablosu yok, o yüzden belirsizlikleri sesli anlatım + 18:00 TR fiyatı yöntemiyle sınırlı
         kalmaya devam ediyor.</li>
     </ul>
-  </section>
+    </div>
+  </details>
 
 
   <footer>
