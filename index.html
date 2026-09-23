@@ -224,9 +224,30 @@
     font-family:'IBM Plex Mono',monospace; margin-bottom:2px; white-space:nowrap;
   }
   .src.stamp{ opacity:.85; margin-top:-1px; }
-  .tick{ animation:tick .55s ease; }
-  @keyframes tick{ from{ background:var(--accent-soft); } to{ background:transparent; } }
-  @media (prefers-reduced-motion:reduce){ .tick{ animation:none; } }
+
+  /* Fiyat kipirdayinca satirin TAMAMI yanip sonuyor, yalnizca fiyat hucresi
+     degil: bir tabloda gozun yakaladigi birim satirdir, tek bir hucrenin
+     icindeki parlamayi kacirmak kolay. Renk yonu tasiyor -- yukari yesil,
+     asagi kirmizi -- ve ikisinin suresi ayni, yoksa biri digerinden daha
+     "onemli" gorunurdu.
+
+     1,6 saniye ve ortada bir bekleme var: eski 0,55 sn dogrudan sonumleniyordu
+     ve ekrana goz ucuyla bakildiginda bitmis oluyordu. %55'e kadar renk sabit
+     duruyor, sonra soniyor -- toplam sureyi uzatmak tek basina yetmez, cunku
+     surekli sonumlenen bir renk erken fark edilmez hale gelir. */
+  @keyframes flash-up{
+    0%,55%{ background:var(--gain-soft); }
+    100%{ background:transparent; }
+  }
+  @keyframes flash-down{
+    0%,55%{ background:var(--loss-soft); }
+    100%{ background:transparent; }
+  }
+  .flash-up{ animation:flash-up 1.6s ease-out; }
+  .flash-down{ animation:flash-down 1.6s ease-out; }
+  @media (prefers-reduced-motion:reduce){
+    .flash-up, .flash-down{ animation:none; }
+  }
 </style>
 
 
@@ -394,7 +415,7 @@ const BACKOFF = [10000, 20000, 40000, 60000];
 
 let prices = Object.assign({}, DATA.snapshot_prices);
 let usdtry = DATA.usdtry;
-let painted = {};           // son basılan yuvarlanmis fiyat -> tick parlamasi icin
+let painted = {};           // {sym: {shown, value}} -> parlamanin var/yok ve yonu
 /* Ekrandaki her fiyatin nereden geldigi: {sym: {src, mode}}. Tahmin degil,
    cevabin kendisinden okunuyor -- Binance'e dusuldugunde o satir da Binance
    yazar, yoksa sayfa TradingView'den geldigini iddia edip durur. */
@@ -483,9 +504,22 @@ function rowHTML(r){
      guncel fiyat bilgi olarak kalir, yuzde basilmaz. */
   const priceGain = closed ? null : (cur - r.buy_price) / r.buy_price * 100;
   const pgcls = priceGain !== null && priceGain >= 0 ? "g" : "l";
-  const priceKey = r.sym;
   const shown = fmtPrice(cur);
-  const flash = painted[priceKey] !== undefined && painted[priceKey] !== shown ? " tick" : "";
+  /* Yon, EKRANDAKI yuvarlanmis deger degistiyse belirleniyor. Ham float'a
+     bakmak, okuyucunun goremedigi bir ondalikta titreyen beslemeyi her turda
+     parlatirdi -- gosterilmeyen bir degisimi haber vermek gurultudur.
+     Ilk boyamada painted bos oldugu icin hicbir satir parlamaz. */
+  const prev = painted[r.sym];
+  const dir = (prev !== undefined && prev.shown !== shown)
+    ? (cur > prev.value ? 1 : -1) : 0;
+  const flashCls = dir > 0 ? "flash-up" : dir < 0 ? "flash-down" : "";
+  /* Kapanmis bir satirda deger ARTIK KIPIRDAMIYOR -- satis aninda dondu. Tum
+     satiri yesile boyamak "bu pozisyon kazandi" demek olurdu, oysa hareket
+     eden tek sey bilgi olarak duran guncel piyasa fiyati. O yuzden orada
+     parlama fiyat hucresiyle sinirli: degisen sayi parliyor, satir degil.
+     Kapanmis satirda yuzde basmama kuralinin aynisi, bir eksen yaninda. */
+  const rowFlash = (flashCls && !closed) ? " " + flashCls : "";
+  const cellFlash = (flashCls && closed) ? " " + flashCls : "";
 
   const buyPrice = (r.approx ? "~" : "") + fmtPrice(r.buy_price);
   // Her satir ya tamamen acik ya tamamen kapali: kismi satis, portfolio.py'de
@@ -497,14 +531,14 @@ function rowHTML(r){
        <div class="val-try mono">${fmtQty(r.sold_units, r.qty_digits)} ${r.unit}</div>`
     : `<span style="color:var(--ink-faint)">—</span>`;
 
-  return `<tr>
+  return `<tr class="${rowFlash.trim()}">
     <td><span class="asset-name">${esc(r.name)}</span><span class="asset-ticker">${esc(r.sym)}</span></td>
     <td class="mono">${trDate(r.buy_date)}</td>
     <td class="right mono">${buyPrice}</td>
     <td class="right mono">${qty}</td>
     <td class="right"><div class="src">${esc(srcTicker(r.sym))}</div>
       ${LIVE ? `<div class="src stamp">${esc(quoteWhen(r.sym))}</div>` : ""}
-      <div class="val-usd mono${flash}">${shown}</div>
+      <div class="val-usd mono${cellFlash}">${shown}</div>
       ${priceGain === null ? "" : `<div class="pct ${pgcls}">${priceGain >= 0 ? "+" : ""}${priceGain.toFixed(1)}%</div>`}</td>
     <td><span class="badge ${r.status_class}">${esc(r.status)}</span></td>
     <td class="right">${sellBlock}</td>
@@ -586,7 +620,13 @@ function render(){
   document.getElementById("m-closed").textContent = closedCount;
   document.getElementById("m-ledger").textContent = DATA.snapshot_date;
 
-  DATA.rows.forEach((r) => { painted[r.sym] = fmtPrice(prices[r.sym]); });
+  /* Hem gosterilen metin hem ham deger saklaniyor: metin "okuyucu bir degisim
+     gordu mu" sorusunu, ham deger "hangi yone" sorusunu cevapliyor. Tek basina
+     metin yonu veremez (yuvarlanmis iki string karsilastirilamaz), tek basina
+     ham deger ise gorunmeyen titremeleri de degisim sayar. */
+  DATA.rows.forEach((r) => {
+    painted[r.sym] = {shown: fmtPrice(prices[r.sym]), value: prices[r.sym]};
+  });
 }
 
 function setStatus(){
