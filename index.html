@@ -12,12 +12,19 @@
      which is the right coincidence for a page whose whole subject is whether a
      position is up; the loss red is tuned to the same chroma so neither side
      shouts louder than the other. Neutrals carry a slight teal bias so they
-     read as chosen rather than inherited grey. */
+     read as chosen rather than inherited grey.
+
+     The two benchmark hues are deliberately OUTSIDE the gain/loss pair. A
+     benchmark is not a position and must never be read as one being up or
+     down -- same reason XAU-Guess draws buy-and-hold in a non-categorical
+     colour. Amber for gold (the thing itself), slate-blue for the index. */
   :root{
     --bg:#f2f5f4; --surface:#ffffff; --surface-2:#eaf0ee;
     --ink:#0c2029; --ink-soft:#4d656f; --ink-faint:#8299a2;
     --accent:#18783c; --accent-ink:#0f5a2c; --accent-soft:#e2f0e7;
     --gain:#18783c; --gain-soft:#e2f0e7; --loss:#b8342a; --loss-soft:#f8e5e3;
+    --bench-gold:#9a6a12; --bench-idx:#3c5a86; --baseline:#9fb2b8;
+    --cat-long:#7a4f9c;
     --border:#dbe5e2; --border-soft:#e9efed;
     --ring:rgba(24,120,60,.18);
     --shadow:0 1px 2px rgba(12,32,41,.05), 0 12px 32px -16px rgba(12,32,41,.22);
@@ -29,6 +36,8 @@
       --ink:#e4eeeb; --ink-soft:#9ab0b8; --ink-faint:#67818b;
       --accent:#3fbf6d; --accent-ink:#83dfa4; --accent-soft:#0f3320;
       --gain:#3fbf6d; --gain-soft:#0f3320; --loss:#e8705f; --loss-soft:#3a1d18;
+      --bench-gold:#d6a24a; --bench-idx:#7fa3d8; --baseline:#4a636d;
+      --cat-long:#b48ad6;
       --border:#1d3a46; --border-soft:#16303a;
       --ring:rgba(63,191,109,.22);
       --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
@@ -40,6 +49,8 @@
     --ink:#e4eeeb; --ink-soft:#9ab0b8; --ink-faint:#67818b;
     --accent:#3fbf6d; --accent-ink:#83dfa4; --accent-soft:#0f3320;
     --gain:#3fbf6d; --gain-soft:#0f3320; --loss:#e8705f; --loss-soft:#3a1d18;
+    --bench-gold:#d6a24a; --bench-idx:#7fa3d8; --baseline:#4a636d;
+    --cat-long:#b48ad6;
     --border:#1d3a46; --border-soft:#16303a;
     --ring:rgba(63,191,109,.22);
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
@@ -54,15 +65,27 @@
     padding-inline:16px; padding-block:28px 64px;
     display:flex; justify-content:center;
   }
-  .page{ width:100%; max-width:980px; }
+  .page{ width:100%; max-width:1000px; }
   h1,h2,h3{ text-wrap:balance; margin:0; font-weight:700; letter-spacing:-.02em; }
   .mono{ font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; }
 
   /* ---- masthead ---------------------------------------------------------
      The logo is the channel's; this page is a third party's simulation of its
      public calls, so the mark identifies the SUBJECT and the line under it
-     says so outright. Identification, not affiliation. */
-  header{ margin-bottom:30px; }
+     says so outright. Identification, not affiliation.
+
+     The candles behind it are the logo's own motif carried into the page --
+     the subject's visual language rather than a generic gradient. They are an
+     inline <svg> (not a background-image) so they take theme tokens; a data
+     URI would need two hard-coded palettes. */
+  header{ position:relative; margin-bottom:26px; }
+  .candles{
+    position:absolute; right:0; top:-6px; height:104px; width:min(52%,420px);
+    opacity:.13; pointer-events:none; z-index:0;
+    -webkit-mask-image:linear-gradient(to left, #000 35%, transparent 100%);
+    mask-image:linear-gradient(to left, #000 35%, transparent 100%);
+  }
+  header > *:not(.candles){ position:relative; z-index:1; }
   .brand{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
   .brand-logo{
     width:60px; height:60px; border-radius:50%; flex:none; display:block;
@@ -95,35 +118,47 @@
   }
   .meta-row b{ color:var(--ink); font-weight:700; }
 
-  /* ---- stat tiles ---- */
-  .stats{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-    gap:12px; margin:26px 0 36px;
+  /* ---- hero -------------------------------------------------------------
+     One dominant number, not four competing ones. The page's answer is the
+     return; everything else is how it got there. */
+  .hero{ display:grid; grid-template-columns:1.15fr 1fr; gap:12px; margin:24px 0 30px; }
+  .hero-main{
+    background:
+      radial-gradient(130% 150% at 0% 0%, var(--accent-soft) 0%, transparent 62%),
+      var(--surface);
+    border:1px solid var(--accent); border-radius:20px;
+    box-shadow:var(--shadow-lg); padding:22px 24px;
+    display:flex; flex-direction:column; justify-content:center;
   }
+  .hero-main .label{
+    font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+    font-weight:700; color:var(--ink-soft);
+  }
+  .hero-num{
+    font-size:clamp(44px,8vw,62px); font-weight:800; letter-spacing:-.045em;
+    line-height:1; margin-top:8px;
+  }
+  .hero-num.g{ color:var(--gain); } .hero-num.l{ color:var(--loss); }
+  .hero-money{ font-size:19px; font-weight:700; margin-top:10px; letter-spacing:-.02em; }
+  .hero-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:6px; line-height:1.5; }
+  .hero-side{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .stat{
     background:var(--surface); border:1px solid var(--border); border-radius:16px;
-    padding:17px 19px; box-shadow:var(--shadow);
+    padding:15px 16px; box-shadow:var(--shadow);
   }
+  .hero-side .stat{ display:flex; flex-direction:column; justify-content:center; }
+  .hero-side .stat.wide{ grid-column:1 / -1; }
   .stat .label{
-    font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;
-    letter-spacing:.09em; font-weight:700;
+    font-size:10px; color:var(--ink-soft); text-transform:uppercase;
+    letter-spacing:.08em; font-weight:700;
   }
-  .stat .value{ font-size:26px; font-weight:800; margin-top:8px; letter-spacing:-.03em; }
-  .stat .sub{ font-size:12px; color:var(--ink-faint); margin-top:4px; line-height:1.45; }
-  .stat .sub b{ color:var(--ink-soft); font-weight:700; }
-  .stat.hero{
-    background:
-      radial-gradient(120% 140% at 0% 0%, var(--accent-soft) 0%, transparent 60%),
-      var(--surface);
-    border-color:var(--accent); box-shadow:var(--shadow-lg);
-  }
-  .stat.hero .value{ color:var(--accent-ink); font-size:29px; }
-  /* Realised profit is a verdict, not a running total, so it takes its sign
-     as colour the way a position does. */
+  .stat .value{ font-size:22px; font-weight:800; margin-top:6px; letter-spacing:-.03em; }
   .stat .value.g{ color:var(--gain); } .stat .value.l{ color:var(--loss); }
+  .stat .sub{ font-size:11.5px; color:var(--ink-faint); margin-top:3px; line-height:1.45; }
+  .stat .sub b{ color:var(--ink-soft); font-weight:700; }
 
   /* ---- sections ---- */
-  section{ margin-bottom:34px; }
+  section{ margin-bottom:30px; }
   .sec-head{
     display:flex; align-items:baseline; justify-content:space-between;
     gap:12px; margin-bottom:12px; flex-wrap:wrap;
@@ -136,6 +171,53 @@
     background:var(--surface); border:1px solid var(--border); border-radius:18px;
     box-shadow:var(--shadow); overflow:hidden;
   }
+  .card.pad{ padding:20px 22px; }
+
+  /* ---- track record ---- */
+  .chart-wrap{ width:100%; }
+  .chart-wrap svg{ display:block; width:100%; height:auto; }
+  .chart-foot{
+    display:flex; flex-wrap:wrap; gap:8px 24px; margin-top:14px;
+    padding-top:14px; border-top:1px solid var(--border-soft); font-size:12.5px;
+  }
+  .chart-foot .item{ display:flex; align-items:center; gap:7px; color:var(--ink-soft); }
+  .swatch{ width:14px; height:3px; border-radius:2px; flex:none; }
+  .chart-foot b{ color:var(--ink); font-weight:700; font-family:'IBM Plex Mono',monospace; }
+  .verdict{
+    margin-top:16px; padding:14px 16px; border-radius:12px;
+    background:var(--surface-2); border:1px solid var(--border);
+    font-size:13.5px; line-height:1.65; color:var(--ink-soft);
+  }
+  .verdict b{ color:var(--ink); font-weight:700; }
+  .verdict .big{ color:var(--accent-ink); font-weight:800; }
+
+  /* ---- allocation + movers ---- */
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .alloc-bar{
+    display:flex; height:16px; border-radius:8px; overflow:hidden;
+    background:var(--surface-2); margin:4px 0 14px;
+  }
+  .alloc-seg{ height:100%; }
+  .alloc-legend{ display:flex; flex-direction:column; gap:9px; font-size:13px; }
+  .alloc-row{ display:flex; align-items:center; gap:9px; color:var(--ink-soft); }
+  .alloc-dot{ width:9px; height:9px; border-radius:3px; flex:none; }
+  .alloc-row .nm{ flex:1; min-width:0; }
+  .alloc-row b{ color:var(--ink); font-weight:700; font-family:'IBM Plex Mono',monospace; }
+  .movers{ display:flex; flex-direction:column; gap:7px; }
+  .mover{ display:flex; align-items:center; gap:10px; font-size:13px; }
+  .mover .nm{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mover .pc{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-variant-numeric:tabular-nums;
+    min-width:62px; text-align:right;
+  }
+  .mover .pc.g{ color:var(--gain); } .mover .pc.l{ color:var(--loss); }
+  .mover-head{
+    font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    font-weight:700; color:var(--ink-faint); margin-bottom:2px;
+  }
+  .mover-head + .movers{ margin-bottom:16px; }
+
+  /* ---- tables ---- */
   .tablewrap{ overflow-x:auto; }
   table{ width:100%; border-collapse:collapse; min-width:900px; }
   thead th{
@@ -155,6 +237,23 @@
     font-family:'IBM Plex Mono',monospace; margin-top:2px; letter-spacing:.02em;
   }
   .right{ text-align:right; }
+
+  /* An asset bought in four goes is still ONE asset. The group row carries
+     what the reader actually asks ("how is my Bitcoin doing"); the tranches
+     under it answer "how did I get here" and are set back a step so the eye
+     can skip them. */
+  tr.group td{
+    background:var(--surface-2); border-bottom:1px solid var(--border);
+    padding-top:11px; padding-bottom:11px;
+  }
+  tr.group:hover td{ background:var(--surface-2); }
+  .group-name{ font-weight:800; font-size:14px; letter-spacing:-.01em; }
+  .group-legs{ font-size:11px; color:var(--ink-faint); font-weight:600; margin-left:8px; }
+  .group-cost{ font-size:11.5px; color:var(--ink-soft); margin-left:14px; }
+  .group-cost b{ font-weight:700; color:var(--ink); }
+  .group-fig{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-variant-numeric:tabular-nums; }
+  tr.leg td:first-child{ padding-left:30px; }
+  tr.leg .asset-name{ font-weight:600; color:var(--ink-soft); font-size:13px; }
 
   .badge{
     display:inline-block; font-size:10.5px; font-weight:700; padding:4px 10px;
@@ -182,21 +281,73 @@
     padding:22px 24px; box-shadow:var(--shadow);
     font-size:13.5px; line-height:1.72; color:var(--ink-soft);
   }
-  .notes h3{ font-size:15px; color:var(--ink); margin-bottom:11px; font-weight:700; }
+  .notes + .notes{ margin-top:12px; }
+  .notes h3{ font-size:15px; color:var(--ink); margin-bottom:4px; font-weight:700; }
+  .notes .note-lead{ font-size:12.5px; color:var(--ink-faint); margin:0 0 12px; }
   .notes ul{ margin:0; padding-left:20px; }
   .notes li{ margin-bottom:9px; }
   .notes li b{ color:var(--ink); font-weight:700; }
   .notes .flag{ color:var(--loss); font-weight:700; }
+  .notes .when{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11px;
+    font-weight:600; color:var(--ink-soft); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:1px 7px; margin-right:7px;
+  }
 
   footer{
     margin-top:38px; padding-top:20px; border-top:1px solid var(--border);
     font-size:12px; color:var(--ink-faint); line-height:1.65;
   }
 
+  @media (max-width:860px){
+    .hero{ grid-template-columns:1fr; }
+    .two-col{ grid-template-columns:1fr; }
+  }
+
+  /* ---- phone: tables stop being tables ---------------------------------
+     Below 760px the widest table needs 900px, so the last column -- Deger,
+     the payload -- sits behind a horizontal scroll most readers never
+     perform. What a scroll hides is not the unimportant column, it is the
+     LAST one. So each row becomes its own label/value card instead, and the
+     label is read from the <th> at render time rather than written a second
+     time next to the value: a hand-written duplicate drifts from its heading
+     the first time a column is renamed. */
+  @media (max-width:760px){
+    .tablewrap{ overflow-x:visible; }
+    table{ min-width:0; display:block; }
+    thead{ display:none; }
+    tbody{ display:block; }
+    tbody tr{
+      display:block; padding:14px 16px;
+      border-bottom:1px solid var(--border);
+    }
+    tbody tr:last-child{ border-bottom:none; }
+    /* Grid, not flex. A "Deger" hucresi dort cocuk tasiyor (dolar, TL, yuzde,
+       cubuk); flex onlari etiketin yanina TEK SATIRA diziyordu ve son yuzde
+       ekrandan 4px tasiyordu. Grid'de etiket solda, cocuklar sagda alt alta --
+       hucrenin kac parcasi oldugundan bagimsiz. */
+    tbody td{
+      display:grid; grid-template-columns:auto 1fr; gap:2px 14px;
+      align-items:baseline; padding:4px 0; border:none; font-size:13.5px;
+    }
+    tbody td::before{
+      content:attr(data-label); grid-column:1; grid-row:1;
+      font-size:10px; letter-spacing:.07em; text-transform:uppercase;
+      font-weight:700; color:var(--ink-faint);
+    }
+    tbody td > *{ grid-column:2; text-align:right; min-width:0; }
+    .bar-track{ display:none; }
+    tr.leg td:first-child{ padding-left:0; }
+    tr.group td::before{ content:""; }
+    tr.group td{ padding:4px 0; }
+    tr.group{ padding:12px 16px; }
+    .asset-ticker{ display:inline; margin-left:8px; }
+    .src{ display:inline-block; margin-right:8px; }
+  }
   @media (max-width:560px){
-    .stats{ grid-template-columns:repeat(2,1fr); }
+    .hero-side{ grid-template-columns:1fr; }
     .brand-logo{ width:50px; height:50px; }
-    thead th:nth-child(3), tbody td:nth-child(3){ display:none; }
+    .candles{ display:none; }
   }
 </style>
 
@@ -248,12 +399,14 @@
   @media (prefers-reduced-motion:reduce){
     .flash-up, .flash-down{ animation:none; }
   }
+  @media (max-width:760px){ tbody td:empty{ display:none; } }
 </style>
 
 
 <div class="page">
 
   <header>
+    <svg class="candles" viewBox="0 0 420 104" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><rect x="7.5" y="67.4" width="1.2" height="19.6" fill="var(--loss)"/><rect x="3.9" y="69.7" width="8.4" height="12.9" rx="1" fill="var(--loss)"/><rect x="23.6" y="64.1" width="1.2" height="17.1" fill="var(--accent)"/><rect x="20.0" y="66.2" width="8.4" height="11.4" rx="1" fill="var(--accent)"/><rect x="39.8" y="51.7" width="1.2" height="19.7" fill="var(--accent)"/><rect x="36.2" y="57.0" width="8.4" height="11.9" rx="1" fill="var(--accent)"/><rect x="55.9" y="39.2" width="1.2" height="33.0" fill="var(--loss)"/><rect x="52.3" y="46.0" width="8.4" height="20.8" rx="1" fill="var(--loss)"/><rect x="72.1" y="53.1" width="1.2" height="16.7" fill="var(--loss)"/><rect x="68.5" y="56.1" width="8.4" height="11.2" rx="1" fill="var(--loss)"/><rect x="88.2" y="42.7" width="1.2" height="23.9" fill="var(--loss)"/><rect x="84.6" y="45.7" width="8.4" height="15.5" rx="1" fill="var(--loss)"/><rect x="104.4" y="42.8" width="1.2" height="21.4" fill="var(--accent)"/><rect x="100.8" y="45.2" width="8.4" height="16.6" rx="1" fill="var(--accent)"/><rect x="120.6" y="31.1" width="1.2" height="33.7" fill="var(--accent)"/><rect x="117.0" y="35.8" width="8.4" height="21.7" rx="1" fill="var(--accent)"/><rect x="136.7" y="30.1" width="1.2" height="24.8" fill="var(--loss)"/><rect x="133.1" y="36.1" width="8.4" height="15.4" rx="1" fill="var(--loss)"/><rect x="152.9" y="25.6" width="1.2" height="30.8" fill="var(--loss)"/><rect x="149.3" y="33.2" width="8.4" height="19.1" rx="1" fill="var(--loss)"/><rect x="169.0" y="36.7" width="1.2" height="20.2" fill="var(--accent)"/><rect x="165.4" y="41.8" width="8.4" height="12.4" rx="1" fill="var(--accent)"/><rect x="185.2" y="35.4" width="1.2" height="19.8" fill="var(--loss)"/><rect x="181.6" y="40.1" width="8.4" height="11.1" rx="1" fill="var(--loss)"/><rect x="201.3" y="36.0" width="1.2" height="26.4" fill="var(--loss)"/><rect x="197.7" y="41.5" width="8.4" height="15.6" rx="1" fill="var(--loss)"/><rect x="217.5" y="27.4" width="1.2" height="40.0" fill="var(--loss)"/><rect x="213.9" y="34.2" width="8.4" height="24.4" rx="1" fill="var(--loss)"/><rect x="233.6" y="15.4" width="1.2" height="42.5" fill="var(--loss)"/><rect x="230.0" y="26.3" width="8.4" height="22.1" rx="1" fill="var(--loss)"/><rect x="249.8" y="21.3" width="1.2" height="23.9" fill="var(--loss)"/><rect x="246.2" y="23.4" width="8.4" height="16.8" rx="1" fill="var(--loss)"/><rect x="265.9" y="13.0" width="1.2" height="20.1" fill="var(--accent)"/><rect x="262.3" y="18.3" width="8.4" height="12.3" rx="1" fill="var(--accent)"/><rect x="282.1" y="7.7" width="1.2" height="24.3" fill="var(--loss)"/><rect x="278.5" y="10.3" width="8.4" height="16.9" rx="1" fill="var(--loss)"/><rect x="298.2" y="-4.9" width="1.2" height="41.2" fill="var(--loss)"/><rect x="294.6" y="6.2" width="8.4" height="25.1" rx="1" fill="var(--loss)"/><rect x="314.4" y="2.6" width="1.2" height="27.2" fill="var(--loss)"/><rect x="310.8" y="10.5" width="8.4" height="16.4" rx="1" fill="var(--loss)"/><rect x="330.6" y="7.1" width="1.2" height="23.8" fill="var(--accent)"/><rect x="327.0" y="11.6" width="8.4" height="14.3" rx="1" fill="var(--accent)"/><rect x="346.7" y="10.3" width="1.2" height="17.5" fill="var(--accent)"/><rect x="343.1" y="13.5" width="8.4" height="10.5" rx="1" fill="var(--accent)"/><rect x="362.9" y="5.1" width="1.2" height="37.5" fill="var(--accent)"/><rect x="359.3" y="12.6" width="8.4" height="21.9" rx="1" fill="var(--accent)"/><rect x="379.0" y="-5.3" width="1.2" height="47.2" fill="var(--loss)"/><rect x="375.4" y="6.0" width="8.4" height="25.4" rx="1" fill="var(--loss)"/><rect x="395.2" y="4.1" width="1.2" height="25.6" fill="var(--accent)"/><rect x="391.6" y="10.2" width="8.4" height="17.0" rx="1" fill="var(--accent)"/><rect x="411.3" y="8.1" width="1.2" height="19.8" fill="var(--accent)"/><rect x="407.7" y="11.8" width="8.4" height="13.9" rx="1" fill="var(--accent)"/></svg>
     <div class="brand">
       <img class="brand-logo" src="data:image/png;base64,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" alt="BolFinans kanal logosu" width="60" height="60">
       <div class="brand-text">
@@ -264,7 +417,7 @@
     <p class="subtitle">
       @BolFinans YouTube kanalının videolarında sözlü olarak "aldım" / "sattım" dediği her noktada,
       o varlığa <b>1.000 $</b> yatırılmış gibi kurulmuş bir kağıt üzerinde portföy.
-      <b style="color:var(--ink)">Bu sayfa canlıdır</b> — açık kaldığı sürece fiyatları kendisi tazeler, defterin kendisi (alış tarihleri, adetler, satış fiyatları) sabittir.
+      <b>Bu sayfa canlıdır</b> — açık kaldığı sürece fiyatları kendisi tazeler, defterin kendisi (alış tarihleri, adetler, satış fiyatları) sabittir.
     </p>
     <p class="unofficial">
       Kanalın <b>resmî sayfası değildir</b> ve kanalla bir bağlantısı yoktur. Logo yalnızca
@@ -274,6 +427,7 @@
     <div class="meta-row">
       <span><b id="m-tranche">–</b> alım tranşı</span>
       <span><b id="m-closed">–</b> kapanan işlem</span>
+      <span><b id="m-days">–</b> gündür takipte</span>
       <span>Fiyat anlık görüntüsü: <b id="m-ledger">–</b></span>
     </div>
     <div class="livebar">
@@ -284,30 +438,59 @@
     </div>
   </header>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="label">Toplam Yatırılan</div>
-      <div class="value mono" id="s-invested">–</div>
-      <div class="sub" id="s-invested-sub">–</div>
+  <div class="hero">
+    <div class="hero-main">
+      <div class="label">Toplam Getiri · USD bazında</div>
+      <div class="hero-num mono" id="h-pct">–</div>
+      <div class="hero-money mono" id="h-money">–</div>
+      <div class="hero-sub" id="h-sub">–</div>
     </div>
-    <div class="stat">
-      <div class="label">Açık Pozisyon Değeri</div>
-      <div class="value mono" id="s-open">–</div>
-      <div class="sub" id="s-open-try">–</div>
-    </div>
-    <div class="stat">
-      <div class="label">Kapananlardan Kâr / Zarar</div>
-      <div class="value mono" id="s-realpl">–</div>
-      <div class="sub" id="s-realpl-sub">–</div>
-      <div class="sub" id="s-realpl-sub2">–</div>
-    </div>
-    <div class="stat hero">
-      <div class="label">Toplam Güncel Karşılık</div>
-      <div class="value mono" id="s-grand">–</div>
-      <div class="sub" id="s-grand-sub">–</div>
+    <div class="hero-side">
+      <div class="stat">
+        <div class="label">Açık Pozisyon</div>
+        <div class="value mono" id="s-open">–</div>
+        <div class="sub" id="s-open-sub">–</div>
+      </div>
+      <div class="stat">
+        <div class="label">Kapananlardan Kâr</div>
+        <div class="value mono" id="s-realpl">–</div>
+        <div class="sub" id="s-realpl-sub">–</div>
+      </div>
+      <div class="stat wide">
+        <div class="label">Şu An Kârda Olan</div>
+        <div class="value mono" id="s-hit">–</div>
+        <div class="sub" id="s-hit-sub">–</div>
+      </div>
     </div>
   </div>
 
+  <section>
+    <div class="sec-head">
+      <h2>Sicil — ilk alımdan bugüne</h2>
+      <div class="cat-totals" id="track-range"></div>
+    </div>
+    <div class="card pad">
+      <div class="chart-wrap" id="chart"></div>
+      <div class="chart-foot" id="chart-foot"></div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </section>
+
+  <section class="two-col">
+    <div class="card pad">
+      <div class="mover-head">Dağılım — açık pozisyonlar</div>
+      <div class="alloc-bar" id="alloc-bar"></div>
+      <div class="alloc-legend" id="alloc-legend"></div>
+    </div>
+    <div class="card pad">
+      <div class="mover-head">En çok kazandıran</div>
+      <div class="movers" id="movers-up"></div>
+      <div class="mover-head">En çok kaybettiren</div>
+      <div class="movers" id="movers-down"></div>
+    </div>
+  </section>
+
+  
   <section>
     <div class="sec-head">
       <h2>Değerli Metaller</h2>
@@ -319,6 +502,7 @@
         <tbody id="tbl-metal"></tbody>
       </table>
     </div></div>
+    
   </section>
 
   <section>
@@ -332,6 +516,7 @@
         <tbody id="tbl-kripto"></tbody>
       </table>
     </div></div>
+    
   </section>
 
   <section>
@@ -345,6 +530,7 @@
         <tbody id="tbl-hisse"></tbody>
       </table>
     </div></div>
+    
   </section>
 
   <section>
@@ -359,12 +545,13 @@
       </table>
     </div></div>
     <p class="subtitle" style="margin-top:10px;font-size:13px">
-      Konuşmacı 1 Ağustos 2026'da ayrı bir <b style="color:var(--ink)">uzun vade portföy</b> serisi başlattı;
+      Konuşmacı 1 Ağustos 2026'da ayrı bir <b>uzun vade portföy</b> serisi başlattı;
       bu iki ürün oradan. Kısa/orta vadeli defterin aksine bunlarda düşüşlerde satış yok, kademeli
       ekleme mantığı var. Google'ın uzun vade girişi (Ekim 2025, ~240 $) ve henüz halka arz edilmemiş
       Anthropic pencere dışında kaldığı için burada yok.
     </p>
   </section>
+
 
   <section class="notes">
     <h3>Bu sayfa canlı derken ne kastediliyor</h3>
@@ -372,17 +559,18 @@
       <li><b>Canlı olan:</b> yalnızca <b>güncel fiyatlar</b> ve onlardan türeyen her şey — pozisyon
         değerleri, TL karşılıkları, yüzdeler, toplamlar. Fiyatlar TradingView'in tarayıcıdan
         erişilebilen beslemesinden çekiliyor, kripto için Binance yedeği var.</li>
-      <li><b>Canlı olmayan:</b> defterin kendisi. Alış tarihleri, alış fiyatları, adetler ve satış
-        fiyatları geçmişte olmuş şeyler; onlar ancak yeni bir video okunup deftere işlendiğinde
-        değişir. Bu sayfa kendi kendine yeni video okuyup portföye satır ekleyemez.</li>
+      <li><b>Canlı olmayan:</b> defterin kendisi ve <b>sicil grafiği</b>. Alış tarihleri, alış
+        fiyatları, adetler, satış fiyatları ve günlük geçmiş geçmişte olmuş şeyler; onlar ancak
+        yeni bir video okunup deftere işlendiğinde değişir. Bu sayfa kendi kendine yeni video
+        okuyup portföye satır ekleyemez.</li>
       <li><b>Gecikmeler gizlenmiyor, ekranda yazıyor.</b> Kripto, USDTRY ve (spot olarak alındığı
         için) altın/gümüş gerçek zamanlı; ABD hisseleri ve ETF'leri 15 dakika gecikmeli — gerçek
         zamanlı ABD hisse verisi ücretli bir borsa beslemesi. Borsa kapalıyken şerit "gecikmeli"
         değil <b>"borsa kapalı · son kapanış"</b> yazar, çünkü gecikemeyeceğiniz bir seansın
-        gecikmesi yoktur. Üstteki şerit bunu beslemenin kendi bildirdiği değerden yazıyor.</li>
-      <li><b>Yahoo Finance bu sayfada kullanılamaz</b> — tarayıcıya CORS izni vermiyor. Bu yüzden
-        hem bu sayfa hem de anlık görüntü artık fiyatlarını TradingView'den alıyor; ikisi aynı
-        seriyi kullanır, aralarında kaynak farkı yoktur.</li>
+        gecikmesi yoktur.</li>
+      <li><b>Fiyat kıpırdayınca satırın tamamı yanıp söner</b> — yukarı yeşil, aşağı kırmızı.
+        Kapanmış satırlarda yalnızca fiyat hücresi parlar, satırın tamamı değil: o pozisyonun
+        değeri satış anında dondu, hareket eden tek şey bilgi olarak duran piyasa fiyatı.</li>
       <li><b>Bağlantı koparsa sayfa boşalmaz:</b> en son alınan fiyatlar ekranda kalır, şerit
         "tazelenemedi" der ve saatini yazar. Hiç internet yoksa sayfa
         <span id="snapdate">anlık görüntü</span> fiyatlarıyla açılır ve bunu söyler.</li>
@@ -390,6 +578,114 @@
         (10 → 20 → 40 → 60 sn), ilk başarıda sıfırlanır.</li>
     </ul>
   </section>
+  <section class="notes">
+    <h3>Yöntem, kapsam ve varsayımlar</h3>
+    <p class="note-lead">Bir cümlenin ne zaman deftere satır olduğu, neyin dışarıda kaldığı ve
+      hangi sayının neye göre hesaplandığı.</p>
+    <ul>
+      <li><b>Kapsam:</b> yalnızca konuşmacının geçmiş zamanla "aldık / alım yaptık / sattık / elden çıkardım"
+        dediği, pencere içinde (23 Haz – 21 Eyl) gerçekleşen işlemler sayıldı. Pencereden önce açılmış ve hiç
+        yeni işlem görmemiş pozisyonlar (Google'ın ilk ~220-230 $ alımı, QQQ'nun Nisan 2025 eklemesi, eski
+        Nasdaq portföyü, eski BTC üst-bölge satışı) simülasyona <b>dahil edilmedi</b> — pencere içinde bir
+        alım/satım anı yok. Koşullu ifadeler ("2.770 kırılırsa alacağım") işlem sayılmaz; koşul gerçekleşince
+        konuşmacı bunu ayrıca söylüyor.</li>
+      <li><b>Her sinyal 1.000 $, ve tarih işlemin OLDUĞU videoya yazılır</b> — sonradan özetlendiği videoya
+        değil. Aynı varlıktan tekrar "aldım" derse mevcut satır büyütülmez, yeni bir tranş eklenir.</li>
+      <li><b>Kısmen satılan pozisyonlar iki satır.</b> Rocket Lab'ın yarısı 16 Eylül'de satıldı, yarısı açık
+        kaldı. Tek satırda gösterildiğinde iki sonuç birbirine karışıyordu — satılan yarının zararı açık
+        yarının seyriyle ortalanıyor, açık kalanın maliyeti 1.000 $ gibi görünüyordu, oysa 500 $'ı nakde
+        dönmüştü. <b>Defterde hâlâ tek bir alım sinyali var</b> (tranş sayısı 24'te kaldı); bölünen yalnızca
+        gösterim.</li>
+      <li><b>"Kapananlardan kâr" ile "realize" aynı sayı değil.</b> Kapanan işlemlerden eline geçen
+        4.570,69 $'ın 4.500 $'ı zaten kendi parandı; geri dönmüş olması bir kazanç değil. Kartta bu yüzden
+        kârın kendisi yazıyor (+70,69 $, +%1,57). Sayının bu kadar küçük olmasının sebebi görünür: dört
+        kapanan işlem kazandırdı, Rocket Lab'ın satılan yarısı (−117,11 $) neredeyse tamamını geri aldı.</li>
+      <li><b>Sicil grafiğindeki kıyas çizgileri aynı nakit akışını izler.</b> Portföy 24.000 $'ı ilk gün
+        yatırmıyor, 24 ayrı tarihte 1.000 $'lık dilimler hâlinde yatırıyor. 23 Haziran'da 24.000 $'lık altın
+        alan bir kıyas başka bir soruyu cevaplar ve takvim şansıyla defteri haksız yere aklar ya da mahkûm
+        ederdi. Bu yüzden her kıyas, her tranşın kendi alım gününde o tranşın kendi parasını kıyas varlığına
+        koyup <b>hiç satmadan</b> tutar. Defter satış yapıyor, kıyas yapmıyor — karşılaştırma bilerek
+        "bunları alıp tutsaydım daha mı iyiydi" sorusudur.
+        <span class="flag">Kıyasın altın bacağı vadeli seriden (GC=F) geliyor</span>, çünkü anahtarsız bir
+        spot altın geçmişi yok; ~%0,82'lik baz farkı eğrinin <i>seviyesini</i> etkiler, kıyasın okunduğu
+        <i>şeklini</i> değil.</li>
+      <li><b>Altın / Gümüş:</b> konuşmacı haftalarca "3.950–4.050 $ dip bölgesinden kademeli aldık" diye tek
+        bir sürekli birikim anlatıyor, ayrı ayrı numaralanmış tranşlar vermiyor. Tek bir 1.000 $'lık tranş
+        olarak ortalama seviyeden (altın $4.000, gümüş $62) işlendi; hiçbiri pencere boyunca satılmadı.</li>
+      <li><b>Bitcoin / Ethereum "kademe" numaraları:</b> kanal 23 Haziran'da tüm kripto pozisyonunu nakde
+        çevirdi, sonra sıfırdan yeniden alım yaptı. Sonraki videolardaki "3. kademe" gibi ifadeler bazen bu
+        sıfırlamadan <i>önceki</i> tranşları da sayıyor — yalnızca pencere içinde açıkça "bugün/dün aldım"
+        denen anlar tranş olarak sayıldı.</li>
+      <li><b>Altın ve gümüş SPOT fiyatla değerleniyor</b>, COMEX vadelisiyle değil. İki sebep: vadeli seri
+        ücretli bir borsa beslemesi olduğu için 10 dakika gecikmeli geliyor, spot ise gerçek zamanlı ve 7/24;
+        ve konuşmacının kendisi spot konuşuyor — 21 Eylül'de "ons altın 4.340 dolar" dediğinde vadeli 4.397
+        (%1,3 yukarıda), spot ~4.361 (%0,5) idi. Aradaki fark (ölçülen %0,82 vadeli bazı) bir piyasa hareketi
+        değil, birim farkıdır.</li>
+      <li><b>Türk borsası (BİST):</b> videoların hiçbirinde somut bir BİST hissesi için "aldım/sattım"
+        ifadesi yok — yalnızca endeks seviyesi yorumu var.
+        <span class="flag">Bu kategoride simüle edilecek işlem yok.</span></li>
+      <li><b>Uzun vade portföy:</b> konuşmacı 1 Ağustos'ta ayrı bir seri başlattı ("UZUN VADE PORTFÖY |
+        1.BÖLÜM"); QQQ ve SpaceX oradan. Anthropic dışarıda — halka arzı pencere kapanana kadar
+        gerçekleşmedi. Google'ın uzun vade girişi (Ekim 2025, ~240 $) pencere öncesi.
+        <b>SOXX kararı:</b> 30 Temmuz'daki alım için konuşmacı "hem kısa vadeli portföy için aldık hem de
+        uzun vadeli portföye ekleme yaptık" diyor. Kuralı harfiyen uygularsak iki ayrı tranş sayılabilirdi;
+        <b>tek tranş sayılıyor</b>, çünkü tek bir alım anından bahsediliyor.</li>
+      <li><b>Günlük geçmiş ileri-doldurmalı.</b> Hisse senedi cumartesi kapalı, kripto açık; her seri aynı
+        kuralla son bilinen kapanışından ileri doldurulur, yani hafta sonu değeri "cuma kapanışındaki
+        hisseler + canlı kripto" olur. Gerçek bir defterin hafta sonu değeri de budur.</li>
+      <li><b>Fiyat kaynağı:</b> geçmiş seriler Yahoo Finance'ın anahtarsız chart API'sinden; canlı fiyatlar
+        TradingView'in tarayıcıdan erişilebilen beslemesinden (kripto için Binance yedeği). Kaynak konuşma
+        YouTube'un otomatik Türkçe altyazısından okundu; sayılar bazen bozuk geliyor (baştaki binler hanesinin
+        düşmesi gibi) ve bu durumlarda gerçek piyasa verisiyle çapraz kontrol edildi.</li>
+    </ul>
+  </section>
+
+  <section class="notes">
+    <h3>Düzeltme geçmişi</h3>
+    <p class="note-lead">Bu defterde bulunan her hata, bulunduğu gün, sebebiyle birlikte. En yeni üstte.</p>
+    <ul>
+      <li><span class="when">23 Eyl 2026</span><b>Bitcoin 4. tranşın tarihi 20 Eylül'den 21 Eylül'e çekildi.</b>
+        Konuşmacı 21 Eylül videosunda "82.500 dolar seviyesi kırıldı ve son olarak 3ünc kademe alımı da
+        gerçekleştirdim" diyor; ayrıca "daha dün konuştuk" diyor ama <i>o cümle alımın değil, koşulun
+        duyurusunun tarihi</i> (gönderiler ve Twitter). Piyasa verisi kesin konuştu:
+        <b>BTC 20 Eylül'de en yüksek 81.451 $ gördü ve 82.500'ü hiç kırmadı</b>; seviye ilk kez
+        21 Eylül 08:00 UTC'de (11:00 TR) aşıldı — videonun kendi günü. Fiyat kırılım seviyesi olarak
+        girildiği için tutar değişmedi, yalnızca tarih.</li>
+      <li><span class="when">23 Eyl 2026</span><b>XRP'nin alış fiyatı kontrol edildi ve değiştirilmedi.</b>
+        21 Eylül videosunda "1.45 seviyelerinden" deniyor, defterde 1,48 yazıyor. Alımın yapıldığı 24 Ağustos
+        videosunda net ifade var: "1.48 seviyelerinden XRP alımı gerçekleştirdim." Defter doğru; 1,45 gevşek
+        bir tekrar anma. <span class="flag">Her iki şüpheyi de 22:00'deki otomatik okuma turu işaretledi</span>
+        ve defteri kendi başına değiştirmek yerine "kontrol bekliyor" diye ayırdı.</li>
+      <li><span class="when">22 Eyl 2026</span><b>Uzun vade portföy tamamen atlanmıştı.</b> 1 Ağustos'taki
+        "UZUN VADE PORTFÖY | 1.BÖLÜM" videosu ilk okumada işlem içermiyor sanılmış, QQQ ve SpaceX alımları
+        rapora hiç girmemişti — <span class="flag">bu bir kapsam hatasıydı</span> ve kanal sahibi bizzat
+        bildirince düzeltildi. Fiyatlar yalnızca ekrandaki tabloda, sesli anlatımda geçmiyor; söylenenler
+        gerçek piyasa verisiyle doğrulandı (QQQ 688 $ → 31 Temmuz kapanışı 689,36 $; SpaceX 112 $ →
+        31 Temmuz 108,94 $ / 3 Ağustos 110,46 $, ikisi de %1,5 içinde). <b>SpaceX'in "halka açık değil" diye
+        dışarıda tutulması da hatalıydı</b>: NASDAQ:SPCX olarak işlem görüyor.</li>
+      <li><span class="when">22 Eyl 2026</span><b>Ethereum fiyatları hatalıydı ve düzeltme zinciri
+        BTC/NVDA/SOXX/CLOU/SKHY'e de sıçradı.</b> Kullanıcı "Ethereum fiyatları doğru değil gibi" diye
+        işaret edince 31 transkript tek tek tarihleriyle yeniden karşılaştırıldı. <b>Kök neden:</b> fiyat
+        verilmeyen bazı satışlar, işlemin <i>gerçekten olduğu</i> video yerine konuşmacının onu <i>sonradan
+        özetlediği</i> videoya tarihlenmişti — fallback fiyatı da o yüzden yanlış günden çekilmişti.
+        BTC-1/ETH-1/NVDA-1 satışı 23 Temmuz'da olmuş, rapor 27 Temmuz yazmıştı. Aynı kalıp SOXX (30 Temmuz →
+        3 Ağustos) ve CLOU'da da tekrarlanmış. Ayrıca <b>Ethereum'un ilk tranşının fiyatları baştan
+        yanlıştı</b>: "920 $" ve "930 $", konuşmacının "1.850 $" ve "1.930 $" demesinin otomatik altyazıda
+        baştaki hanenin düşmesiyle bozulmuş hâliymiş — gerçek piyasa verisiyle (16 Temmuz'da ETH ~1.869 $)
+        çapraz kontrol edilince ortaya çıktı. <b>Üçüncü bir Ethereum tranşı tamamen atlanmıştı</b>: yalnızca
+        son videonun kapanış özetinde "biri 920 $'dan, diğeri de 2.150 $'dan" cümlesiyle ortaya çıktı.
+        Düzeltme toplam getiriyi +%14,9'dan +%8,4'e indirdi.</li>
+      <li><span class="when">22 Eyl 2026</span><b>Ekrandaki portföy tablosu tarihleri düzeltti.</b> Son
+        videoda konuşmacının ekranda gösterdiği "portföye eklendi" tarihleri — sesli anlatımda yer almayan,
+        yalnızca görüntüde geçen bir veri — elle karşılaştırıldı. SOXX, GOOGL, ARTY, SKYY, GRID, CIBR ve
+        Nvidia'nın 2. tranşının tarihleri buna göre düzeltildi. Aynı tablo, sesli geçen ama kodu çözülemeyen
+        <b>"SKH" hissesinin SK Hynix (SKHY)</b> olduğunu da netleştirdi.</li>
+      <li><b>Hâlâ açık olan belirsizlik:</b> altın ve gümüşün tarihleri. Onlar için ekranda paylaşılmış bir
+        tarih tablosu yok, o yüzden belirsizlikleri sesli anlatım + 18:00 TR fiyatı yöntemiyle sınırlı
+        kalmaya devam ediyor.</li>
+    </ul>
+  </section>
+
 
   <footer>
     Bu sayfa bir üçüncü şahsın YouTube'da paylaştığı kamuya açık yorumların geriye dönük, kağıt
@@ -401,6 +697,7 @@
 
 <script>
 const DATA = {"snapshot_date": "2026-09-22", "usdtry": 48.8151, "snapshot_prices": {"XAUUSD": 4333.17, "XAGUSD": 65.7555, "BTC-USD": 86100.01, "ETH-USD": 2760.23, "XRP-USD": 1.5446, "NVDA": 227.38, "SOXX": 559.34, "GOOGL": 354.97, "CLOU": 28.93, "GRID": 181.08, "CIBR": 103.09, "ARTY": 78.57, "SKYY": 168.21, "RKLB": 69.89, "TLT": 81.8, "SKHY": 188.86, "QQQ": 741.47, "SPCX": 151.85}, "tv_tickers": {"XAUUSD": "TVC:GOLD", "XAGUSD": "TVC:SILVER", "BTC-USD": "BINANCE:BTCUSDT", "ETH-USD": "BINANCE:ETHUSDT", "XRP-USD": "BINANCE:XRPUSDT", "NVDA": "NASDAQ:NVDA", "SOXX": "NASDAQ:SOXX", "GOOGL": "NASDAQ:GOOGL", "CLOU": "NASDAQ:CLOU", "GRID": "NASDAQ:GRID", "CIBR": "NASDAQ:CIBR", "ARTY": "AMEX:ARTY", "SKYY": "NASDAQ:SKYY", "RKLB": "NASDAQ:RKLB", "TLT": "NASDAQ:TLT", "SKHY": "NASDAQ:SKHY", "QQQ": "NASDAQ:QQQ", "SPCX": "NASDAQ:SPCX"}, "tv_usdtry": "FX_IDC:USDTRY", "binance_fallback": {"BTC-USD": "BTCUSDT", "ETH-USD": "ETHUSDT", "XRP-USD": "XRPUSDT"}, "us_session_symbols": ["NVDA", "SOXX", "GOOGL", "CLOU", "GRID", "CIBR", "ARTY", "SKYY", "RKLB", "TLT", "SKHY", "QQQ", "SPCX"], "tranche_usd": 1000.0, "rows": [{"sym": "XAUUSD", "cat": "metal", "name": "Altın (ons)", "unit": "ons", "qty_digits": 6, "buy_date": "2026-07-03", "buy_price": 4000.0, "approx": false, "units": 0.25, "held_units": 0.25, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1083.2925}, {"sym": "XAGUSD", "cat": "metal", "name": "Gümüş (ons)", "unit": "ons", "qty_digits": 6, "buy_date": "2026-06-25", "buy_price": 62.0, "approx": false, "units": 16.129032258064516, "held_units": 16.129032258064516, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1060.5725806451612}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 1. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-07-09", "buy_price": 62500.0, "approx": false, "units": 0.016, "held_units": 0.0, "sold_units": 0.016, "sell_date": "2026-07-23", "sell_price": 65123.02, "realized_usd": 1041.96832, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1041.96832}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 2. tranş (yeni giriş)", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-07-27", "buy_price": 64900.0, "approx": false, "units": 0.015408320493066256, "held_units": 0.015408320493066256, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1326.6565485362096}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 3. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-08-24", "buy_price": 68000.0, "approx": false, "units": 0.014705882352941176, "held_units": 0.014705882352941176, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1266.1766176470587}, {"sym": "BTC-USD", "cat": "kripto", "name": "Bitcoin · 4. tranş", "unit": "BTC", "qty_digits": 6, "buy_date": "2026-09-21", "buy_price": 82500.0, "approx": false, "units": 0.012121212121212121, "held_units": 0.012121212121212121, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1043.6364848484848}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 1. tranş", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-07-16", "buy_price": 1850.0, "approx": true, "units": 0.5405405405405406, "held_units": 0.0, "sold_units": 0.5405405405405406, "sell_date": "2026-07-23", "sell_price": 1903.1, "realized_usd": 1028.7027027027027, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1028.7027027027027}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 2. tranş (yeni giriş)", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-07-27", "buy_price": 1920.0, "approx": true, "units": 0.5208333333333334, "held_units": 0.5208333333333334, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1437.6197916666667}, {"sym": "ETH-USD", "cat": "kripto", "name": "Ethereum · 3. tranş", "unit": "ETH", "qty_digits": 6, "buy_date": "2026-08-20", "buy_price": 2150.0, "approx": false, "units": 0.46511627906976744, "held_units": 0.46511627906976744, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1283.827906976744}, {"sym": "XRP-USD", "cat": "kripto", "name": "XRP", "unit": "XRP", "qty_digits": 3, "buy_date": "2026-08-24", "buy_price": 1.48, "approx": false, "units": 675.6756756756757, "held_units": 675.6756756756757, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1043.6486486486488}, {"sym": "NVDA", "cat": "hisse", "name": "Nvidia · 1. tranş", "unit": "pay", "qty_digits": 4, "buy_date": "2026-07-09", "buy_price": 202.0, "approx": false, "units": 4.9504950495049505, "held_units": 0.0, "sold_units": 4.9504950495049505, "sell_date": "2026-07-23", "sell_price": 208.58, "realized_usd": 1032.5742574257426, "invested": 1000.0, "status": "SATILDI 23.07", "status_class": "closed", "snapshot_value_usd": 1032.5742574257426}, {"sym": "NVDA", "cat": "hisse", "name": "Nvidia · 2. tranş (yeni giriş)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-26", "buy_price": 210.5, "approx": false, "units": 4.750593824228028, "held_units": 4.750593824228028, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1080.190023752969}, {"sym": "SOXX", "cat": "hisse", "name": "SOX ETF (yarı iletken)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-07-30", "buy_price": 502.0, "approx": false, "units": 1.9920318725099602, "held_units": 1.9920318725099602, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1114.2231075697212}, {"sym": "GOOGL", "cat": "hisse", "name": "Alphabet / Google", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-03", "buy_price": 370.0, "approx": false, "units": 2.7027027027027026, "held_units": 2.7027027027027026, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 959.3783783783784}, {"sym": "CLOU", "cat": "hisse", "name": "CLOU ETF (bulut bilişim)", "unit": "pay", "qty_digits": 3, "buy_date": "2026-08-03", "buy_price": 25.9, "approx": false, "units": 38.610038610038615, "held_units": 0.0, "sold_units": 38.610038610038615, "sell_date": "2026-08-13", "sell_price": 28.09, "realized_usd": 1084.5559845559847, "invested": 1000.0, "status": "SATILDI 13.08", "status_class": "closed", "snapshot_value_usd": 1084.5559845559847}, {"sym": "GRID", "cat": "hisse", "name": "GRID ETF (enerji altyapısı)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 188.0, "approx": false, "units": 5.319148936170213, "held_units": 5.319148936170213, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 963.1914893617022}, {"sym": "CIBR", "cat": "hisse", "name": "CIBR ETF (siber güvenlik)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 100.0, "approx": false, "units": 10.0, "held_units": 10.0, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1030.9}, {"sym": "ARTY", "cat": "hisse", "name": "ARTY ETF (AI/robotik altyapı)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 77.0, "approx": false, "units": 12.987012987012987, "held_units": 12.987012987012987, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1020.3896103896103}, {"sym": "SKYY", "cat": "hisse", "name": "SKYY ETF (CLOU yerine)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-13", "buy_price": 165.02, "approx": true, "units": 6.059871530723548, "held_units": 6.059871530723548, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1019.3309901830081}, {"sym": "RKLB", "cat": "hisse", "name": "Rocket Lab · %50 satılan", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-17", "buy_price": 83.0, "approx": false, "units": 6.024096385542169, "held_units": 0.0, "sold_units": 6.024096385542169, "sell_date": "2026-09-16", "sell_price": 63.56, "realized_usd": 382.89156626506025, "invested": 500.0, "status": "SATILDI 16.09", "status_class": "closed", "snapshot_value_usd": 382.89156626506025}, {"sym": "RKLB", "cat": "hisse", "name": "Rocket Lab · %50 kalan", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-17", "buy_price": 83.0, "approx": false, "units": 6.024096385542169, "held_units": 6.024096385542169, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 500.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 421.0240963855422}, {"sym": "TLT", "cat": "hisse", "name": "TLT ETF (uzun vadeli tahvil)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-24", "buy_price": 82.0, "approx": false, "units": 12.195121951219512, "held_units": 12.195121951219512, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 997.560975609756}, {"sym": "SKHY", "cat": "hisse", "name": "SK Hynix", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-26", "buy_price": 164.0, "approx": false, "units": 6.097560975609756, "held_units": 6.097560975609756, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1151.5853658536587}, {"sym": "QQQ", "cat": "uzunvade", "name": "QQQ ETF (Nasdaq 100)", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-01", "buy_price": 688.0, "approx": false, "units": 1.4534883720930232, "held_units": 1.4534883720930232, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1077.718023255814}, {"sym": "SPCX", "cat": "uzunvade", "name": "SpaceX", "unit": "pay", "qty_digits": 4, "buy_date": "2026-08-01", "buy_price": 112.0, "approx": false, "units": 8.928571428571429, "held_units": 8.928571428571429, "sold_units": 0.0, "sell_date": null, "sell_price": null, "realized_usd": 0.0, "invested": 1000.0, "status": "AÇIK", "status_class": "open", "snapshot_value_usd": 1355.8035714285713}], "totals": {"tranches": 24, "invested": 24000.0, "open": 21736.726711137704, "realized": 4570.692830949491, "realized_cost": 4500.0, "realized_pl": 70.6928309494906, "realized_pct": 1.570951798877569, "grand": 26307.419542087195}};
+const HIST = {"start": "2026-06-25", "end": "2026-09-23", "days": 91, "points": [{"d": "2026-06-25", "v": 941.1, "inv": 1000.0, "gold": 1000.0, "qqq": 1000.0, "fx": 46.5793}, {"d": "2026-06-26", "v": 955.11, "inv": 1000.0, "gold": 1012.03, "qqq": 986.24, "fx": 46.5793}, {"d": "2026-06-27", "v": 955.11, "inv": 1000.0, "gold": 1012.03, "qqq": 986.24, "fx": 46.5793}, {"d": "2026-06-28", "v": 955.11, "inv": 1000.0, "gold": 1012.03, "qqq": 986.24, "fx": 46.6162}, {"d": "2026-06-29", "v": 938.31, "inv": 1000.0, "gold": 997.85, "qqq": 1010.75, "fx": 46.6407}, {"d": "2026-06-30", "v": 959.31, "inv": 1000.0, "gold": 997.75, "qqq": 1027.95, "fx": 46.6547}, {"d": "2026-07-01", "v": 969.11, "inv": 1000.0, "gold": 1008.6, "qqq": 1012.27, "fx": 46.6772}, {"d": "2026-07-02", "v": 978.11, "inv": 1000.0, "gold": 1019.3, "qqq": 994.72, "fx": 46.7235}, {"d": "2026-07-03", "v": 2009.54, "inv": 2000.0, "gold": 2019.3, "qqq": 1994.72, "fx": 46.7235}, {"d": "2026-07-04", "v": 2009.54, "inv": 2000.0, "gold": 2019.3, "qqq": 1994.72, "fx": 46.7235}, {"d": "2026-07-05", "v": 2009.54, "inv": 2000.0, "gold": 2019.3, "qqq": 1994.72, "fx": 46.8076}, {"d": "2026-07-06", "v": 2040.58, "inv": 2000.0, "gold": 2039.75, "qqq": 2023.33, "fx": 46.8185}, {"d": "2026-07-07", "v": 2022.11, "inv": 2000.0, "gold": 2034.81, "qqq": 1985.85, "fx": 46.8519}, {"d": "2026-07-08", "v": 1958.73, "inv": 2000.0, "gold": 1998.1, "qqq": 1991.48, "fx": 46.8681}, {"d": "2026-07-09", "v": 4023.99, "inv": 4000.0, "gold": 4026.69, "qqq": 4024.62, "fx": 46.9477}, {"d": "2026-07-10", "v": 4063.48, "inv": 4000.0, "gold": 4000.33, "qqq": 4037.03, "fx": 46.9477}, {"d": "2026-07-11", "v": 4058.28, "inv": 4000.0, "gold": 4000.33, "qqq": 4037.03, "fx": 46.9477}, {"d": "2026-07-12", "v": 4057.57, "inv": 4000.0, "gold": 4000.33, "qqq": 4037.03, "fx": 46.9865}, {"d": "2026-07-13", "v": 3934.41, "inv": 4000.0, "gold": 3895.31, "qqq": 3960.41, "fx": 47.0226}, {"d": "2026-07-14", "v": 4053.17, "inv": 4000.0, "gold": 3957.55, "qqq": 4004.64, "fx": 47.0258}, {"d": "2026-07-15", "v": 4021.46, "inv": 4000.0, "gold": 3940.14, "qqq": 3993.79, "fx": 47.0366}, {"d": "2026-07-16", "v": 4954.1, "inv": 5000.0, "gold": 4882.08, "qqq": 4928.13, "fx": 47.1021}, {"d": "2026-07-17", "v": 4930.07, "inv": 5000.0, "gold": 4914.74, "qqq": 4854.06, "fx": 47.1021}, {"d": "2026-07-18", "v": 4955.45, "inv": 5000.0, "gold": 4914.74, "qqq": 4854.06, "fx": 47.1021}, {"d": "2026-07-19", "v": 4959.23, "inv": 5000.0, "gold": 4914.74, "qqq": 4854.06, "fx": 47.1411}, {"d": "2026-07-20", "v": 4999.21, "inv": 5000.0, "gold": 4911.19, "qqq": 4859.16, "fx": 47.1806}, {"d": "2026-07-21", "v": 5100.69, "inv": 5000.0, "gold": 4985.18, "qqq": 4949.28, "fx": 47.1977}, {"d": "2026-07-22", "v": 5158.57, "inv": 5000.0, "gold": 5077.51, "qqq": 4924.01, "fx": 47.2124}, {"d": "2026-07-23", "v": 5048.02, "inv": 5000.0, "gold": 4953.14, "qqq": 4830.54, "fx": 47.3168}, {"d": "2026-07-24", "v": 5067.01, "inv": 5000.0, "gold": 4978.33, "qqq": 4776.58, "fx": 47.3168}, {"d": "2026-07-25", "v": 5067.01, "inv": 5000.0, "gold": 4978.33, "qqq": 4776.58, "fx": 47.3168}, {"d": "2026-07-26", "v": 5067.01, "inv": 5000.0, "gold": 4978.33, "qqq": 4776.58, "fx": 47.351}, {"d": "2026-07-27", "v": 7032.18, "inv": 7000.0, "gold": 6985.91, "qqq": 6761.85, "fx": 47.3544}, {"d": "2026-07-28", "v": 7021.17, "inv": 7000.0, "gold": 6920.28, "qqq": 6696.12, "fx": 47.3834}, {"d": "2026-07-29", "v": 7024.33, "inv": 7000.0, "gold": 6916.17, "qqq": 6559.72, "fx": 47.3699}, {"d": "2026-07-30", "v": 8077.88, "inv": 8000.0, "gold": 8025.49, "qqq": 7776.02, "fx": 47.5014}, {"d": "2026-07-31", "v": 8001.42, "inv": 8000.0, "gold": 8039.0, "qqq": 7826.53, "fx": 47.5014}, {"d": "2026-08-01", "v": 9959.4, "inv": 10000.0, "gold": 10039.0, "qqq": 9826.53, "fx": 47.5014}, {"d": "2026-08-02", "v": 9990.85, "inv": 10000.0, "gold": 10039.0, "qqq": 9826.53, "fx": 47.5341}, {"d": "2026-08-03", "v": 12059.5, "inv": 12000.0, "gold": 11998.67, "qqq": 11999.07, "fx": 47.54}, {"d": "2026-08-04", "v": 12373.71, "inv": 12000.0, "gold": 12180.83, "qqq": 12406.65, "fx": 47.5682}, {"d": "2026-08-05", "v": 12251.75, "inv": 12000.0, "gold": 12628.45, "qqq": 12294.39, "fx": 47.5506}, {"d": "2026-08-06", "v": 12256.32, "inv": 12000.0, "gold": 12612.02, "qqq": 12248.97, "fx": 47.6598}, {"d": "2026-08-07", "v": 12553.31, "inv": 12000.0, "gold": 12905.64, "qqq": 12392.6, "fx": 47.6598}, {"d": "2026-08-08", "v": 12554.86, "inv": 12000.0, "gold": 12905.64, "qqq": 12392.6, "fx": 47.6598}, {"d": "2026-08-09", "v": 12550.37, "inv": 12000.0, "gold": 12905.64, "qqq": 12392.6, "fx": 47.6915}, {"d": "2026-08-10", "v": 12609.56, "inv": 12000.0, "gold": 12964.31, "qqq": 12355.58, "fx": 47.7233}, {"d": "2026-08-11", "v": 12524.51, "inv": 12000.0, "gold": 13027.08, "qqq": 12314.1, "fx": 47.7502}, {"d": "2026-08-12", "v": 12678.93, "inv": 12000.0, "gold": 13104.52, "qqq": 12404.08, "fx": 47.758}, {"d": "2026-08-13", "v": 16710.14, "inv": 16000.0, "gold": 16966.36, "qqq": 16547.54, "fx": 47.8797}, {"d": "2026-08-14", "v": 16638.68, "inv": 16000.0, "gold": 17031.23, "qqq": 16524.94, "fx": 47.8797}, {"d": "2026-08-15", "v": 16639.56, "inv": 16000.0, "gold": 17031.23, "qqq": 16524.94, "fx": 47.8797}, {"d": "2026-08-16", "v": 16632.77, "inv": 16000.0, "gold": 17031.23, "qqq": 16524.94, "fx": 47.8574}, {"d": "2026-08-17", "v": 17737.62, "inv": 17000.0, "gold": 18170.94, "qqq": 17497.81, "fx": 47.9033}, {"d": "2026-08-18", "v": 17469.22, "inv": 17000.0, "gold": 17955.26, "qqq": 17201.5, "fx": 47.9101}, {"d": "2026-08-19", "v": 17652.45, "inv": 17000.0, "gold": 18461.76, "qqq": 17167.22, "fx": 47.9449}, {"d": "2026-08-20", "v": 18741.05, "inv": 18000.0, "gold": 19567.77, "qqq": 18043.75, "fx": 48.0426}, {"d": "2026-08-21", "v": 19118.66, "inv": 18000.0, "gold": 20035.2, "qqq": 18107.45, "fx": 48.0426}, {"d": "2026-08-22", "v": 19009.62, "inv": 18000.0, "gold": 20035.2, "qqq": 18107.45, "fx": 48.0426}, {"d": "2026-08-23", "v": 19058.98, "inv": 18000.0, "gold": 20035.2, "qqq": 18107.45, "fx": 48.0454}, {"d": "2026-08-24", "v": 22085.24, "inv": 21000.0, "gold": 23108.82, "qqq": 20926.75, "fx": 48.0766}, {"d": "2026-08-25", "v": 22064.12, "inv": 21000.0, "gold": 23092.59, "qqq": 21057.11, "fx": 48.1107}, {"d": "2026-08-26", "v": 24102.46, "inv": 23000.0, "gold": 24889.92, "qqq": 23076.37, "fx": 48.1324}, {"d": "2026-08-27", "v": 24484.06, "inv": 23000.0, "gold": 24947.16, "qqq": 23392.32, "fx": 47.9941}, {"d": "2026-08-28", "v": 24051.94, "inv": 23000.0, "gold": 24229.87, "qqq": 23240.51, "fx": 47.9941}, {"d": "2026-08-29", "v": 24088.54, "inv": 23000.0, "gold": 24229.87, "qqq": 23240.51, "fx": 47.9941}, {"d": "2026-08-30", "v": 24006.78, "inv": 23000.0, "gold": 24229.87, "qqq": 23240.51, "fx": 48.2469}, {"d": "2026-08-31", "v": 24113.34, "inv": 23000.0, "gold": 23970.99, "qqq": 23251.21, "fx": 48.2675}, {"d": "2026-09-01", "v": 23742.95, "inv": 23000.0, "gold": 23515.8, "qqq": 22955.37, "fx": 48.2819}, {"d": "2026-09-02", "v": 23746.15, "inv": 23000.0, "gold": 23613.15, "qqq": 23007.27, "fx": 48.3159}, {"d": "2026-09-03", "v": 24319.64, "inv": 23000.0, "gold": 24283.36, "qqq": 23280.73, "fx": 48.4299}, {"d": "2026-09-04", "v": 24270.97, "inv": 23000.0, "gold": 23944.78, "qqq": 23322.58, "fx": 48.4299}, {"d": "2026-09-05", "v": 24308.99, "inv": 23000.0, "gold": 23944.78, "qqq": 23322.58, "fx": 48.4299}, {"d": "2026-09-06", "v": 24365.17, "inv": 23000.0, "gold": 23944.78, "qqq": 23322.58, "fx": 48.4232}, {"d": "2026-09-07", "v": 24287.8, "inv": 23000.0, "gold": 23944.78, "qqq": 23322.58, "fx": 48.4489}, {"d": "2026-09-08", "v": 24389.0, "inv": 23000.0, "gold": 23743.66, "qqq": 23303.12, "fx": 48.4631}, {"d": "2026-09-09", "v": 24324.66, "inv": 23000.0, "gold": 23859.73, "qqq": 23236.62, "fx": 48.4873}, {"d": "2026-09-10", "v": 23937.67, "inv": 23000.0, "gold": 23574.1, "qqq": 22989.43, "fx": 48.5921}, {"d": "2026-09-11", "v": 24191.73, "inv": 23000.0, "gold": 23582.66, "qqq": 23190.23, "fx": 48.5921}, {"d": "2026-09-12", "v": 24212.72, "inv": 23000.0, "gold": 23582.66, "qqq": 23190.23, "fx": 48.5921}, {"d": "2026-09-13", "v": 24133.93, "inv": 23000.0, "gold": 23582.66, "qqq": 23190.23, "fx": 48.6087}, {"d": "2026-09-14", "v": 24045.46, "inv": 23000.0, "gold": 23277.77, "qqq": 23005.32, "fx": 48.6243}, {"d": "2026-09-15", "v": 23704.3, "inv": 23000.0, "gold": 23175.61, "qqq": 22854.8, "fx": 48.6551}, {"d": "2026-09-16", "v": 23863.92, "inv": 23000.0, "gold": 23468.19, "qqq": 22860.64, "fx": 48.6673}, {"d": "2026-09-17", "v": 24205.07, "inv": 23000.0, "gold": 23533.45, "qqq": 23256.4, "fx": 48.7762}, {"d": "2026-09-18", "v": 24616.92, "inv": 23000.0, "gold": 23668.24, "qqq": 23403.35, "fx": 48.7762}, {"d": "2026-09-19", "v": 24656.91, "inv": 23000.0, "gold": 23668.24, "qqq": 23403.35, "fx": 48.7762}, {"d": "2026-09-20", "v": 24664.65, "inv": 23000.0, "gold": 23668.24, "qqq": 23403.35, "fx": 48.7732}, {"d": "2026-09-21", "v": 26350.66, "inv": 24000.0, "gold": 24448.94, "qqq": 25052.79, "fx": 48.8073}, {"d": "2026-09-22", "v": 26334.99, "inv": 24000.0, "gold": 24407.11, "qqq": 25052.79, "fx": 48.8073}, {"d": "2026-09-23", "v": 26300.31, "inv": 24000.0, "gold": 24278.84, "qqq": 25052.79, "fx": 48.8331}], "benchmarks": [{"key": "gold", "label": "sadece altın"}, {"key": "qqq", "label": "sadece QQQ"}], "max_drawdown_pct": -4.01, "max_drawdown_date": "2026-07-08", "fx": {"try_cost": 1143359.9, "try_value": 1284325.65, "usd_return_pct": 9.58, "try_return_pct": 12.33, "fx_contribution_pct": 2.74, "fx_end": 48.833099365234375}, "hit": {"open_win": 16, "open_total": 20, "closed_win": 4, "closed_total": 5, "total_win": 20, "total": 25, "tranches": 24}};
 const LIVE = true;
 
 const TRADINGVIEW = "https://scanner.tradingview.com/global/scan";
@@ -412,6 +709,11 @@ const BINANCE = "https://data-api.binance.vision/api/v3/ticker/price";
    üstelik burada belgelenmemiş bir uç noktaya. */
 const REFRESH_MS = 10000;
 const BACKOFF = [10000, 20000, 40000, 60000];
+
+const CATS = ["metal", "kripto", "hisse", "uzunvade"];
+const CAT_LABEL = {metal:"Metaller", kripto:"Kripto", hisse:"ABD hisse/ETF", uzunvade:"Uzun vade"};
+const CAT_COLOUR = {metal:"var(--bench-gold)", kripto:"var(--accent)",
+                    hisse:"var(--bench-idx)", uzunvade:"var(--cat-long)"};
 
 let prices = Object.assign({}, DATA.snapshot_prices);
 let usdtry = DATA.usdtry;
@@ -431,11 +733,11 @@ const fmtUSD2 = (n) => "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2,
 const fmtTRY = (n) => n.toLocaleString("tr-TR", {maximumFractionDigits:0}) + " ₺";
 const fmtQty = (n, d) => n.toLocaleString("tr-TR", {minimumFractionDigits:d, maximumFractionDigits:d});
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pctTxt = (p, d) => (p >= 0 ? "+" : "−") + "%" + Math.abs(p).toFixed(d === undefined ? 1 : d).replace(".", ",");
 
 /* Fiyat hassasiyeti buyuklukten turetiliyor: XRP'yi 2 haneye yuvarlamak
    gunluk hareketinin tamamini yok eder, altini 4 haneye basmak ise gurultu. */
 function fmtPrice(n){
-  if (n >= 1000) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
   if (n >= 10) return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2});
   return "$" + n.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4});
 }
@@ -448,9 +750,6 @@ const fmtDay = (epoch) => new Date(epoch * 1000).toLocaleDateString("tr-TR", {
   day: "2-digit", month: "2-digit", year: "numeric",
 });
 
-/* Fiyatin ustunde duran kucuk kaynak satiri: hangi sembolden geldigi ve
-   EKRANDAKI SAYININ HANGI ANA AIT OLDUGU. Statik surumde saat yok -- sayfanin
-   tamami tek bir anlik goruntu ve tarihi basligin altinda yaziyor. */
 function srcTicker(sym){
   const meta = priceMeta[sym];
   return (meta && meta.src) || DATA.tv_tickers[sym] || "";
@@ -460,16 +759,11 @@ function srcTicker(sym){
 
    1) Gercek zamanli seri  -> veri ani = beslemenin update_time'i.
    2) Gecikmeli seri, seans ACIK -> ekrandaki sayi piyasanin N saniye onceki
-      halini anlatiyor, o yuzden update_time'dan gecikme DUSULUYOR. Ham
-      update_time'i basmak "az once" demek olurdu ki yanlis.
-   3) Gecikmeli seri, seans KAPALI -> tuzak burada: update_time borsa kapaliyken
-      de ilerlemeye devam ediyor (olculdu), yani "15 dk once" diye bir sayi
-      uretilebilirdi ama fiyat aslinda son kapanisa ait. Bu durumda saat degil,
-      son seansin GUNU yaziliyor.
-
-   Not: beslemenin saati tarayicininkinden birkac saniye ileride olabilir
-   (olculdu, ~20 sn). Duzeltilmiyor -- hangi saatin dogru oldugunu bilemeyiz ve
-   olculen degeri kendi kafamiza gore kaydirmak, gosterdigi seyi bozmak olur. */
+      halini anlatiyor, o yuzden update_time'dan gecikme DUSULUYOR.
+   3) Gecikmeli seri, seans KAPALI -> update_time borsa kapaliyken de
+      ilerlemeye devam ediyor (olculdu), yani "15 dk once" diye bir sayi
+      uretilebilirdi ama fiyat aslinda son kapanisa ait. Saat degil, son
+      seansin GUNU yaziliyor. */
 function quoteWhen(sym){
   const meta = priceMeta[sym];
   if (!LIVE || !meta || !meta.updateTime) return "";
@@ -488,65 +782,82 @@ function barHTML(pct){
   return `<div class="bar-track"><div class="bar-mark"></div><div class="bar-fill ${cls}" style="width:${clamped}%"></div></div>`;
 }
 
-function rowHTML(r){
+function legValue(r){
+  return r.status_class === "closed" ? r.realized_usd : r.held_units * prices[r.sym];
+}
+
+function rowHTML(r, isLeg){
   const cur = prices[r.sym];
   const closed = r.status_class === "closed";
-  // Kapanmis tranşın degeri satis aninda dondu; acik olan canli fiyatla deger bulur.
-  const value = closed ? r.realized_usd : r.held_units * cur;
+  const value = legValue(r);
   const gain = value - r.invested;
   const gainPct = gain / r.invested * 100;
   const gcls = gain >= 0 ? "g" : "l";
   /* Kapanmis bir tranşın guncel fiyatinin yaninda "alistan bu yana %X" basmak
      iki farkli referansli yuzdeyi yan yana koymaktir: tranş 65.123'ten satildi
      ve +%4,2 kazandi, ama fiyat o gunden beri yukselmeye devam ettigi icin
-     alis fiyatina gore +%37 gorunuyor. Ikisi ayni satirda, ayni renkte, ayni
-     bicimde durunca okuyucu ikincisini tranşın kazanci sanar. Kapanmis satirda
-     guncel fiyat bilgi olarak kalir, yuzde basilmaz. */
+     alis fiyatina gore +%37 gorunuyor. Kapanmis satirda guncel fiyat bilgi
+     olarak kalir, yuzde basilmaz. */
   const priceGain = closed ? null : (cur - r.buy_price) / r.buy_price * 100;
   const pgcls = priceGain !== null && priceGain >= 0 ? "g" : "l";
   const shown = fmtPrice(cur);
   /* Yon, EKRANDAKI yuvarlanmis deger degistiyse belirleniyor. Ham float'a
      bakmak, okuyucunun goremedigi bir ondalikta titreyen beslemeyi her turda
-     parlatirdi -- gosterilmeyen bir degisimi haber vermek gurultudur.
-     Ilk boyamada painted bos oldugu icin hicbir satir parlamaz. */
+     parlatirdi. Ilk boyamada painted bos oldugu icin hicbir satir parlamaz. */
   const prev = painted[r.sym];
-  const dir = (prev !== undefined && prev.shown !== shown)
-    ? (cur > prev.value ? 1 : -1) : 0;
+  const dir = (prev !== undefined && prev.shown !== shown) ? (cur > prev.value ? 1 : -1) : 0;
   const flashCls = dir > 0 ? "flash-up" : dir < 0 ? "flash-down" : "";
-  /* Kapanmis bir satirda deger ARTIK KIPIRDAMIYOR -- satis aninda dondu. Tum
-     satiri yesile boyamak "bu pozisyon kazandi" demek olurdu, oysa hareket
-     eden tek sey bilgi olarak duran guncel piyasa fiyati. O yuzden orada
-     parlama fiyat hucresiyle sinirli: degisen sayi parliyor, satir degil.
-     Kapanmis satirda yuzde basmama kuralinin aynisi, bir eksen yaninda. */
   const rowFlash = (flashCls && !closed) ? " " + flashCls : "";
   const cellFlash = (flashCls && closed) ? " " + flashCls : "";
 
   const buyPrice = (r.approx ? "~" : "") + fmtPrice(r.buy_price);
-  // Her satir ya tamamen acik ya tamamen kapali: kismi satis, portfolio.py'de
-  // iki ayri bacak olarak uretiliyor, o yuzden burada "kalan" diye bir ek yok.
   const qty = fmtQty(closed ? r.units : r.held_units, r.qty_digits) + " " + r.unit;
-
   const sellBlock = r.sell_price
     ? `<div class="val-usd mono">${fmtPrice(r.sell_price)}</div>
        <div class="val-try mono">${fmtQty(r.sold_units, r.qty_digits)} ${r.unit}</div>`
     : `<span style="color:var(--ink-faint)">—</span>`;
 
-  return `<tr class="${rowFlash.trim()}">
-    <td><span class="asset-name">${esc(r.name)}</span><span class="asset-ticker">${esc(r.sym)}</span></td>
+  return `<tr class="${(isLeg ? "leg" : "") + rowFlash}">
+    <td><span class="asset-name">${esc(r.name)}</span>${isLeg ? "" : `<span class="asset-ticker">${esc(r.sym)}</span>`}</td>
     <td class="mono">${trDate(r.buy_date)}</td>
     <td class="right mono">${buyPrice}</td>
     <td class="right mono">${qty}</td>
     <td class="right"><div class="src">${esc(srcTicker(r.sym))}</div>
       ${LIVE ? `<div class="src stamp">${esc(quoteWhen(r.sym))}</div>` : ""}
       <div class="val-usd mono${cellFlash}">${shown}</div>
-      ${priceGain === null ? "" : `<div class="pct ${pgcls}">${priceGain >= 0 ? "+" : ""}${priceGain.toFixed(1)}%</div>`}</td>
+      ${priceGain === null ? "" : `<div class="pct ${pgcls}">${pctTxt(priceGain)}</div>`}</td>
     <td><span class="badge ${r.status_class}">${esc(r.status)}</span></td>
     <td class="right">${sellBlock}</td>
     <td class="right">
       <div class="val-usd mono">${fmtUSD2(value)}</div>
       <div class="val-try mono">${fmtTRY(value * usdtry)}</div>
-      <div class="pct ${gcls}">${gain >= 0 ? "+" : ""}${gainPct.toFixed(1)}%</div>
+      <div class="pct ${gcls}">${pctTxt(gainPct)}</div>
       ${barHTML(Math.min(100, value / (r.invested * 2) * 100))}
+    </td>
+  </tr>`;
+}
+
+/* Dort BTC tranşı dort ayri varlik degil; okuyucunun sorusu "Bitcoin'im ne
+   durumda". Grup satiri onu cevapliyor, altindaki bacaklar "buraya nasil
+   gelindi"i. Tek bacakli varliklar grup satiri ALMIYOR: bir kalemin ustune
+   kendisinin ozetini koymak bos bir tekrar. */
+function groupHTML(sym, legs){
+  const invested = legs.reduce((a, r) => a + r.invested, 0);
+  const value = legs.reduce((a, r) => a + legValue(r), 0);
+  const pct = (value - invested) / invested * 100;
+  const name = legs[0].name.split(" · ")[0];
+  /* Maliyet ismin yaninda, kendi sutununda degil: tek basina bir "$4.000"
+     rakami "Alis Fiyati" basliginin altinda durunca Bitcoin'in 4.000 dolardan
+     alindigi okunur. Bir sayinin hangi soruyu cevapladigini sutun basligi
+     soyluyorsa, o sayi o sutuna ait olmali. */
+  return `<tr class="group">
+    <td colspan="7"><span class="group-name">${esc(name)}</span><span class="group-legs">${legs.length} tranş</span>
+        <span class="asset-ticker">${esc(sym)}</span>
+        <span class="group-cost">maliyet <b class="group-fig">${fmtUSD0(invested)}</b></span></td>
+    <td class="right">
+      <div class="val-usd mono group-fig">${fmtUSD2(value)}</div>
+      <div class="val-try mono">${fmtTRY(value * usdtry)}</div>
+      <div class="pct ${pct >= 0 ? "g" : "l"}">${pctTxt(pct)}</div>
     </td>
   </tr>`;
 }
@@ -556,14 +867,42 @@ function trDate(iso){
   return `${d}.${m}.${y}`;
 }
 
-function render(){
-  const cats = {metal: [], kripto: [], hisse: [], uzunvade: []};
+/* Mobil etiketler <th>'den RENDER ANINDA okunuyor, degerin yanina ikinci kez
+   yazilmiyor: elle yazilan bir kopya, bir kolon ilk yeniden adlandirildiginda
+   basligindan ayrisir ve hicbir hata uretmez. */
+function labelTableCells(){
+  document.querySelectorAll("table").forEach((t) => {
+    const heads = Array.from(t.querySelectorAll("thead th")).map((h) => h.textContent.trim());
+    t.querySelectorAll("tbody tr").forEach((tr) => {
+      Array.from(tr.children).forEach((td, i) => td.setAttribute("data-label", heads[i] || ""));
+    });
+  });
+}
+
+function renderTables(){
+  const cats = {};
+  CATS.forEach((c) => cats[c] = []);
   DATA.rows.forEach((r) => cats[r.cat].push(r));
 
   let totalOpen = 0, totalReal = 0;
   const catTotals = {};
-  for (const [cat, list] of Object.entries(cats)) {
-    document.getElementById("tbl-" + cat).innerHTML = list.map(rowHTML).join("");
+  for (const cat of CATS) {
+    const list = cats[cat];
+    const bySym = new Map();
+    list.forEach((r) => {
+      if (!bySym.has(r.sym)) bySym.set(r.sym, []);
+      bySym.get(r.sym).push(r);
+    });
+    let html = "";
+    bySym.forEach((legs, sym) => {
+      if (legs.length > 1) {
+        html += groupHTML(sym, legs) + legs.map((r) => rowHTML(r, true)).join("");
+      } else {
+        html += rowHTML(legs[0], false);
+      }
+    });
+    document.getElementById("tbl-" + cat).innerHTML = html;
+
     let open = 0, real = 0;
     list.forEach((r) => {
       if (r.status_class === "closed") real += r.realized_usd;
@@ -571,59 +910,231 @@ function render(){
     });
     catTotals[cat] = {open, real};
     totalOpen += open; totalReal += real;
-  }
 
-  document.getElementById("tot-metal").innerHTML =
-    `<span>güncel: <b>${fmtUSD0(catTotals.metal.open)}</b> (${fmtTRY(catTotals.metal.open * usdtry)})</span>`;
-  for (const cat of ["kripto", "hisse", "uzunvade"]) {
-    const t = catTotals[cat];
     // Uzun vade defterinde hic satis olmadi; "realize: $0" basmak olmayan bir
-    // kolonu varmis gibi gosterir, o yuzden yalnizca varsa yazilir.
-    document.getElementById("tot-" + cat).innerHTML = t.real > 0
-      ? `<span>açık: <b>${fmtUSD0(t.open)}</b> &middot; realize: <b>${fmtUSD0(t.real)}</b> `
-        + `&middot; toplam ${fmtTRY((t.open + t.real) * usdtry)}</span>`
-      : `<span>güncel: <b>${fmtUSD0(t.open)}</b> (${fmtTRY(t.open * usdtry)})</span>`;
+    // kolonu varmis gibi gosterir, o yuzden yalnizca varsa yaziliyor.
+    document.getElementById("tot-" + cat).innerHTML = real > 0
+      ? `<span>açık: <b>${fmtUSD0(open)}</b> &middot; realize: <b>${fmtUSD0(real)}</b> `
+        + `&middot; toplam ${fmtTRY((open + real) * usdtry)}</span>`
+      : `<span>güncel: <b>${fmtUSD0(open)}</b> (${fmtTRY(open * usdtry)})</span>`;
   }
+  labelTableCells();
+  return {totalOpen, totalReal, catTotals};
+}
 
+function renderHero(totalOpen, totalReal){
   const invested = DATA.totals.invested;
-  const tranches = DATA.totals.tranches;
   const grand = totalOpen + totalReal;
-  document.getElementById("s-invested").textContent = fmtUSD0(invested);
-  document.getElementById("s-invested-sub").textContent = `${tranches} tranş × 1.000 $`;
+  const pct = (grand - invested) / invested * 100;
+  const el = document.getElementById("h-pct");
+  el.textContent = pctTxt(pct, 2);
+  el.className = "hero-num mono " + (pct >= 0 ? "g" : "l");
+  document.getElementById("h-money").textContent =
+    `${fmtUSD0(grand)} · ${fmtTRY(grand * usdtry)}`;
+  document.getElementById("h-sub").innerHTML =
+    `${DATA.totals.tranches} tranş × 1.000 $ = <b>${fmtUSD0(invested)}</b> yatırıldı`
+    + ` · USDTRY ${usdtry.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4})}`;
+
   document.getElementById("s-open").textContent = fmtUSD0(totalOpen);
-  document.getElementById("s-open-try").textContent = fmtTRY(totalOpen * usdtry);
+  document.getElementById("s-open-sub").innerHTML =
+    `${fmtTRY(totalOpen * usdtry)} · <b>${DATA.rows.filter((r) => r.status_class === "open").length}</b> açık bacak`;
 
   /* Kapananlarin SONUCU, eline gecen para degil. "Realize: $4.571" bir kazanc
-     gibi okunur, oysa onun $4.500'u zaten kendi paran -- geri donmus olmasi bir
-     basari degil. Cevabin kendi maliyet tabani var: yalnizca kapanan bacaklar.
-     Bu sayi canli fiyatla degismiyor, gecmiste olmus islemlerin toplami. */
+     gibi okunur, oysa onun $4.500'u zaten kendi paran. */
   const rpl = DATA.totals.realized_pl;
   const rplEl = document.getElementById("s-realpl");
   rplEl.textContent = (rpl >= 0 ? "+" : "−") + fmtUSD2(Math.abs(rpl));
   rplEl.className = "value mono " + (rpl >= 0 ? "g" : "l");
-  const rpct = DATA.totals.realized_pct;
-  document.getElementById("s-realpl-sub").textContent =
-    `${rpct >= 0 ? "+" : "−"}%${Math.abs(rpct).toFixed(2).replace(".", ",")}`
-    + ` · ${rpl >= 0 ? "+" : "−"}${fmtTRY(Math.abs(rpl * usdtry))}`;
-  const closedCount = DATA.rows.filter((r) => r.status_class === "closed").length;
-  document.getElementById("s-realpl-sub2").innerHTML =
-    `${closedCount} kapanan işlem · maliyet <b>${fmtUSD0(DATA.totals.realized_cost)}</b>`
-    + ` → eline geçen <b>${fmtUSD0(totalReal)}</b>`;
+  document.getElementById("s-realpl-sub").innerHTML =
+    `${pctTxt(DATA.totals.realized_pct, 2)} · maliyet <b>${fmtUSD0(DATA.totals.realized_cost)}</b>`
+    + ` → <b>${fmtUSD0(totalReal)}</b>`;
 
-  document.getElementById("s-grand").textContent = fmtUSD0(grand);
-  const pct = (grand - invested) / invested * 100;
-  document.getElementById("s-grand-sub").textContent =
-    `${fmtTRY(grand * usdtry)} · USD bazında ${pct >= 0 ? "+" : ""}%${Math.abs(pct).toFixed(1).replace(".", ",")}`
-    + ` · USDTRY ${usdtry.toLocaleString("tr-TR", {minimumFractionDigits:4, maximumFractionDigits:4})}`;
+  const wins = DATA.rows.filter((r) => legValue(r) > r.invested).length;
+  document.getElementById("s-hit").textContent = `${wins} / ${DATA.rows.length}`;
+  document.getElementById("s-hit-sub").textContent =
+    `bacağın %${(wins / DATA.rows.length * 100).toFixed(0)}'i alış maliyetinin üzerinde`;
 
-  document.getElementById("m-tranche").textContent = tranches;
-  document.getElementById("m-closed").textContent = closedCount;
+  document.getElementById("m-tranche").textContent = DATA.totals.tranches;
+  document.getElementById("m-closed").textContent =
+    DATA.rows.filter((r) => r.status_class === "closed").length;
   document.getElementById("m-ledger").textContent = DATA.snapshot_date;
+  if (HIST) document.getElementById("m-days").textContent = HIST.days;
+}
 
+function renderAllocation(catTotals){
+  const total = CATS.reduce((a, c) => a + catTotals[c].open, 0);
+  if (!total) return;
+  document.getElementById("alloc-bar").innerHTML = CATS
+    .filter((c) => catTotals[c].open > 0)
+    .map((c) => `<div class="alloc-seg" style="width:${catTotals[c].open / total * 100}%;background:${CAT_COLOUR[c]}"></div>`)
+    .join("");
+  document.getElementById("alloc-legend").innerHTML = CATS
+    .filter((c) => catTotals[c].open > 0)
+    .sort((a, b) => catTotals[b].open - catTotals[a].open)
+    .map((c) => `<div class="alloc-row">
+        <span class="alloc-dot" style="background:${CAT_COLOUR[c]}"></span>
+        <span class="nm">${CAT_LABEL[c]}</span>
+        <b>%${(catTotals[c].open / total * 100).toFixed(1).replace(".", ",")}</b>
+        <b style="color:var(--ink-soft);font-weight:600">${fmtUSD0(catTotals[c].open)}</b>
+      </div>`).join("");
+}
+
+function renderMovers(){
+  const scored = DATA.rows.map((r) => ({
+    name: r.name, sym: r.sym,
+    pct: (legValue(r) - r.invested) / r.invested * 100,
+    closed: r.status_class === "closed",
+  })).sort((a, b) => b.pct - a.pct);
+  const line = (m) => `<div class="mover">
+      <span class="nm">${esc(m.name)}${m.closed ? ' <span style="color:var(--ink-faint);font-size:11px">kapandı</span>' : ""}</span>
+      <span class="pc ${m.pct >= 0 ? "g" : "l"}">${pctTxt(m.pct)}</span>
+    </div>`;
+  document.getElementById("movers-up").innerHTML = scored.slice(0, 4).map(line).join("");
+  document.getElementById("movers-down").innerHTML = scored.slice(-4).reverse().map(line).join("");
+}
+
+/* ---------- sicil grafigi ----------------------------------------------
+   Ekseni tek bir olcek yerlestiriyor ve her etiket grafigin GERCEKTEN
+   ulastigi bir degeri adlandiriyor. Nisangah YOK ve bu bilincli: XRP/XAU
+   tarafinda olculdu -- imlec gezdirdikce altindaki sayilari yeniden yazan bir
+   grafik, okuyucunun az once okudugu sayiyi elinden alir. Her cizginin kimligi
+   sag ucundaki dogrudan etikette, altindaki ozet ise sabit. */
+function niceStep(range, want){
+  const raw = range / want;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  for (const m of [1, 2, 2.5, 5, 10]) if (raw / mag <= m) return m * mag;
+  return 10 * mag;
+}
+
+function drawChart(){
+  const wrap = document.getElementById("chart");
+  if (!wrap || !HIST || !HIST.points.length) return;
+  const pts = HIST.points;
+  const W = Math.max(300, Math.round(wrap.clientWidth || 900));
+  const narrow = W < 560;
+  const H = narrow ? 230 : 300;
+  const padL = narrow ? 44 : 52, padR = narrow ? 12 : 104, padT = 12, padB = 24;
+
+  const series = [
+    {key:"inv",  colour:"var(--baseline)",   label:"Yatırılan", dash:"4 4", w:1.5},
+    {key:"gold", colour:"var(--bench-gold)", label:"Altın",     dash:"",    w:1.8},
+    {key:"qqq",  colour:"var(--bench-idx)",  label:"QQQ",       dash:"",    w:1.8},
+    {key:"v",    colour:"var(--accent)",     label:"Portföy",   dash:"",    w:2.6},
+  ].filter((s) => pts.some((p) => p[s.key] !== undefined));
+
+  /* Eksen DOLAR DEGIL GETIRI, ve bu grafigi kurtaran karar. Mutlak dolar
+     cizildiginde uc cizgi de ayni merdiveni tirmaniyor -- cunku defter her
+     tranşta 1.000 $ EKLIYOR ve o basamaklar performans farkini tamamen
+     yutuyor. Okuyucunun sordugu soru "para eklendi mi" degil, "eklenen her
+     dolar ne yapti". Yatirilana bolunce mevduat basamaklari dusuyor ve geriye
+     yalnizca varlik secimi kaliyor; toplam dolar zaten yukaridaki kartta. */
+  const ret = (p, key) => (p[key] / p.inv - 1) * 100;
+
+  let lo = Infinity, hi = -Infinity;
+  pts.forEach((p) => series.forEach((s) => {
+    if (p[s.key] === undefined) return;
+    const v = ret(p, s.key);
+    lo = Math.min(lo, v); hi = Math.max(hi, v);
+  }));
+  const pad = (hi - lo) * 0.12 || 1;
+  lo -= pad; hi += pad;
+
+  const x = (i) => padL + i / (pts.length - 1) * (W - padL - padR);
+  const y = (v) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+
+  const step = niceStep(hi - lo, 4);
+  const gridEls = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+    const zero = Math.abs(t) < 1e-9;
+    gridEls.push(`<line x1="${padL}" x2="${W - padR}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"
+        stroke="${zero ? "var(--border)" : "var(--border-soft)"}" stroke-width="1"/>`);
+    gridEls.push(`<text x="${padL - 8}" y="${(y(t) + 3.5).toFixed(1)}" text-anchor="end"
+        font-size="10" font-family="'IBM Plex Mono',monospace" fill="var(--ink-faint)">${
+          (t > 0 ? "+" : t < 0 ? "−" : "") + "%" + Math.abs(t).toFixed(0)}</text>`);
+  }
+
+  // Ay sinirlari: okuyucunun takvimde nerede oldugunu soyleyen tek isaret.
+  let lastMonth = null;
+  pts.forEach((p, i) => {
+    const m = p.d.slice(0, 7);
+    if (m === lastMonth) return;
+    lastMonth = m;
+    if (i === 0) return;
+    gridEls.push(`<line x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${padT}" y2="${H - padB}"
+        stroke="var(--border-soft)" stroke-width="1"/>`);
+    gridEls.push(`<text x="${(x(i) + 5).toFixed(1)}" y="${H - padB + 14}" font-size="10"
+        font-family="'Plus Jakarta Sans',sans-serif" fill="var(--ink-faint)">${
+          new Date(p.d).toLocaleDateString("tr-TR", {month:"short"})}</text>`);
+  });
+
+  const paths = series.map((s) => {
+    const d = pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(ret(p, s.key)).toFixed(1)).join(" ");
+    return `<path d="${d}" fill="none" stroke="${s.colour}" stroke-width="${s.w}"
+        stroke-linejoin="round" stroke-linecap="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ""}/>`;
+  });
+
+  // Dogrudan etiketler: kimlik hicbir zaman yalniz renge yaslanmiyor.
+  // Cakisanlar asagi itiliyor, yoksa iki etiket ust uste biner.
+  let labels = "";
+  if (!narrow) {
+    const placed = series.map((s) => ({s, yy: y(ret(pts[pts.length - 1], s.key))}))
+                         .sort((a, b) => a.yy - b.yy);
+    for (let i = 1; i < placed.length; i++) {
+      if (placed[i].yy - placed[i - 1].yy < 14) placed[i].yy = placed[i - 1].yy + 14;
+    }
+    labels = placed.map(({s, yy}) =>
+      `<text x="${W - padR + 8}" y="${(yy + 3.5).toFixed(1)}" font-size="11" font-weight="700"
+         font-family="'Plus Jakarta Sans',sans-serif" fill="${s.colour}">${s.label}</text>`).join("");
+  }
+
+  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img"
+    aria-label="Portföyün ilk alımdan bugüne değeri ve kıyasları">${
+      gridEls.join("")}${paths.join("")}${labels}</svg>`;
+
+  const last = pts[pts.length - 1];
+  document.getElementById("chart-foot").innerHTML = series.slice().reverse().map((s) =>
+    `<span class="item"><span class="swatch" style="background:${s.colour}"></span>${s.label}
+      <b>${fmtUSD0(last[s.key])}</b>${s.key === "inv" ? "" :
+        ` <span class="pct ${last[s.key] >= last.inv ? "g" : "l"}" style="margin:0">${
+          pctTxt((last[s.key] / last.inv - 1) * 100, 2)}</span>`}</span>`).join("");
+}
+
+function renderVerdict(){
+  if (!HIST) return;
+  const last = HIST.points[HIST.points.length - 1];
+  const mine = (last.v / last.inv - 1) * 100;
+  const parts = HIST.benchmarks
+    .filter((b) => last[b.key] !== undefined)
+    .map((b) => `${b.label} <b>${pctTxt((last[b.key] / last.inv - 1) * 100, 2)}</b>`);
+  const best = Math.max(...HIST.benchmarks.filter((b) => last[b.key] !== undefined)
+                                          .map((b) => (last[b.key] / last.inv - 1) * 100));
+  const beat = mine > best;
+  const h = HIST.hit;
+  const fx = HIST.fx;
+  document.getElementById("track-range").innerHTML =
+    `<span>${trDate(HIST.start)} → ${trDate(HIST.end)} · <b>${HIST.days}</b> gün</span>`;
+  document.getElementById("verdict").innerHTML =
+    `<b>Aynı para, aynı tarihler, farklı varlık.</b> Her tranşın 1.000 $'ı kendi alım gününde
+     kıyas varlığına konup hiç satılmasaydı: ${parts.join(", ")}. Bu defter
+     <span class="big">${pctTxt(mine, 2)}</span> —
+     ${beat ? "yani ikisini de geçiyor" : "yani kıyasın gerisinde"}.
+     Yolda gördüğü en büyük düşüş <b>${pctTxt(HIST.max_drawdown_pct, 2)}</b>
+     (${trDate(HIST.max_drawdown_date)}), ve ${h.total} bacağın <b>${h.total_win}</b>'i şu an
+     maliyetinin üzerinde.
+     ${fx ? `<br><b>TL'ye çevirince ${pctTxt(fx.try_return_pct, 2)} görünüyor</b>, ama aradaki
+     ${pctTxt(fx.fx_contribution_pct, 2).replace("%", "")} puan portföyün değil kurun:
+     her 1.000 $ kendi alım günündeki kurdan harcandı.` : ""}
+     <br><span style="color:var(--ink-faint)">Kıyas çizgileri hiç satmıyor, defter satıyor —
+     karşılaştırma "bunları alıp tutsaydım daha mı iyiydi" sorusunundur.</span>`;
+}
+
+function render(){
+  const {totalOpen, totalReal, catTotals} = renderTables();
+  renderHero(totalOpen, totalReal);
+  renderAllocation(catTotals);
+  renderMovers();
   /* Hem gosterilen metin hem ham deger saklaniyor: metin "okuyucu bir degisim
-     gordu mu" sorusunu, ham deger "hangi yone" sorusunu cevapliyor. Tek basina
-     metin yonu veremez (yuvarlanmis iki string karsilastirilamaz), tek basina
-     ham deger ise gorunmeyen titremeleri de degisim sayar. */
+     gordu mu", ham deger "hangi yone" sorusunu cevapliyor. */
   DATA.rows.forEach((r) => {
     painted[r.sym] = {shown: fmtPrice(prices[r.sym]), value: prices[r.sym]};
   });
@@ -649,25 +1160,20 @@ function setStatus(){
    preflight yaniti Access-Control-Allow-Headers olarak yalnizca Referer,Accept
    donuyor -- content-type yok -- yani normal bir application/json POST tarayici
    tarafindan gonderilmeden reddedilir. Ayni govdeyi text/plain ile yollamak
-   istegi "simple request" yapar, preflight gerekmez ve yanit allow-origin
-   basligiyla gelir. Bunu JSON'a cevirmek curl'de calismaya devam ederken
-   tarayicida sessizce kirar. (XAU-Guess/frontend/app.js'de olculmus ders.) */
+   istegi "simple request" yapar. Bunu JSON'a cevirmek curl'de calismaya devam
+   ederken tarayicida sessizce kirar. */
 async function fetchTradingView(){
   const tickers = Object.values(DATA.tv_tickers).concat([DATA.tv_usdtry]);
   const response = await fetch(TRADINGVIEW, {
     method: "POST",
     headers: {"Content-Type": "text/plain;charset=UTF-8"},
-    // update_time: beslemenin bu satiri en son tazeledigi an.
-    // time: gunluk barin baslangici -- borsa kapaliyken son seansin gunu.
     body: JSON.stringify({symbols: {tickers},
                           columns: ["close", "update_mode", "update_time", "time"]}),
   });
   if (!response.ok) throw new Error("tv " + response.status);
   const rows = (await response.json()).data ?? [];
   const bySymbol = new Map(rows.map((r) => [r.s, r.d]));
-  const out = {};
-  const modes = {};
-  const meta = {};
+  const out = {}, modes = {}, meta = {};
   for (const [sym, ticker] of Object.entries(DATA.tv_tickers)) {
     const cell = bySymbol.get(ticker);
     const v = cell ? Number(cell[0]) : NaN;
@@ -699,10 +1205,9 @@ async function fetchBinance(){
   return out;
 }
 
-/* ABD borsasi 09:30-16:00 New York saatiyle acik. Kapaliyken "15 dk gecikmeli"
-   demek yaniltici: gecikemeyeceginiz bir seansin gecikmesi yoktur, ekrandaki
-   sayi son kapanistir ve dogrudur. Saat New York'un kendi saatinden okunuyor,
-   yerel saatten ofset hesaplanmiyor -- yaz saati gecisinde sessizce kayardi. */
+/* ABD borsasi 09:30-16:00 New York saatiyle acik. Saat New York'un kendi
+   saatinden okunuyor, yerel saatten ofset hesaplanmiyor -- yaz saati
+   gecisinde sessizce kayardi. */
 function usMarketOpen(){
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York", weekday: "short", hour: "2-digit",
@@ -712,12 +1217,10 @@ function usMarketOpen(){
   const day = get("weekday");
   if (day === "Sat" || day === "Sun") return false;
   const mins = Number(get("hour")) * 60 + Number(get("minute"));
-  return mins >= 570 && mins < 960;   // 09:30 - 16:00
+  return mins >= 570 && mins < 960;
 }
 
 function describeDelays(modes){
-  // "delayed_streaming_900" -> 15 dk. Serit bunu beslemenin kendi bildirdigi
-  // degerden yaziyor; sabit bir metin, besleme degistiginde sessizce yanlis olur.
   const open = usMarketOpen();
   const seen = new Set();
   const parts = [];
@@ -730,9 +1233,7 @@ function describeDelays(modes){
     if (!m) label = "gerçek zamanlı";
     else if (isUS && !open) label = "borsa kapalı · son kapanış";
     else label = `${Math.round(Number(m[1]) / 60)} dk gecikmeli`;
-    const names = {metal: "Metaller", kripto: "Kripto", hisse: "ABD hisse/ETF",
-                   uzunvade: "Uzun vade"};
-    const line = `${names[row.cat]}: ${label}`;
+    const line = `${CAT_LABEL[row.cat]}: ${label}`;
     if (!seen.has(line)) { seen.add(line); parts.push(line); }
   }
   return parts.join(" · ");
@@ -780,16 +1281,23 @@ function schedule(ms){
 const snapEl = document.getElementById("snapdate");
 if (snapEl) snapEl.textContent = DATA.snapshot_date + " anlık görüntüsü";
 render();
+drawChart();
+renderVerdict();
+
+// Grafik canli fiyatla degismiyor (gecmis sabit), yalnizca genislik degisince
+// yeniden cizilmesi gerekiyor.
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawChart, 150);
+});
 
 /* Statik surumde ag cagrisi HIC yapilmaz: sayfa anlik goruntu fiyatlariyla
    cizilir ve orada kalir. Yayinlanan artifact bu surumdur cunku orada sayfanin
-   disariya istek atmasi zaten engelli -- canli kodu oraya koymak, hicbir zaman
-   basarili olmayacak bir cagriyi her 10 saniyede bir denemek olurdu. */
+   disariya istek atmasi zaten engelli. */
 if (LIVE) {
   setStatus();
   tick();
-  // Sekmeye donuldugunde beklemeden tazele -- gizliyken atlanan turlar yuzunden
-  // ekranda eski bir saat kalmasin.
   document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 }
 </script>
