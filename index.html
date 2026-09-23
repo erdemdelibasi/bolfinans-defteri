@@ -1043,7 +1043,9 @@ function drawChart(){
     ...(HIST.benchmarks || []).map((b) => ({
       key: b.key, colour: b.colour, label: b.short, dash: "", w: 1.8,
     })),
-    {key:"v", colour:"var(--accent)", label:"Portföy", dash:"", w:2.6},
+    // Digerleri varlik adi (Altin, Bitcoin, QQQ, VOO); yesil cizgi de kimin
+    // kararlari oldugunu adiyla soylesin.
+    {key:"v", colour:"var(--accent)", label:"BolFinans", dash:"", w:2.6},
   ].filter((s) => pts.some((p) => p[s.key] !== undefined));
 
   /* Eksen DOLAR DEGIL GETIRI, ve bu grafigi kurtaran karar. Mutlak dolar
@@ -1112,7 +1114,7 @@ function drawChart(){
   }
 
   wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img"
-    aria-label="Portföyün ilk alımdan bugüne değeri ve kıyasları">${
+    aria-label="BolFinans defterinin ilk alımdan bugüne getirisi ve kıyasları">${
       gridEls.join("")}${paths.join("")}${labels}</svg>`;
 
   /* Imlecin durdugu gunu okutan katman. Alttaki ozet satiri DEGISMIYOR: o her
