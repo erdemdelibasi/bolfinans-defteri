@@ -451,14 +451,47 @@
   @media (max-width:760px){ tbody td:empty{ display:none; } }
 
   /* ---- dayanak: her tranşın altında konuşmacının kendi sözü ------------
-     Satırın rakamları bir iddia; altındaki kutu o iddianın kaynağı. Katlanmıyor:
-     okuyucunun "bunu gerçekten söyledi mi" sorusunun cevabı bir tıklamanın
-     arkasına konursa, sorulmayan soru olur. Her alıntı videonun o saniyesine
-     bağlı ve transkriptte bulunamayan alıntı kırmızıyla işaretli (kaynak.py). */
-  tr.has-prov td{ border-bottom:none; padding-bottom:5px; }
+     Satırın rakamları bir iddia; altındaki kutu o iddianın kaynağı. Her alıntı
+     videonun o saniyesine bağlı (kaynak.py).
+
+     KATLANIR, ve bu kullanıcının kararı (2026-09-25). İlk sürüm hepsini açık
+     basıyordu: 26 kutu sayfayı tablonun birkaç katına uzatıyordu ve tranşlar
+     artık tek bakışta yan yana görülemiyordu -- defterin kendisi, kaynağının
+     arkasında kaybolmuştu. "Uyarılar katlanmaz" kuralı yine de ayakta:
+     transkriptte bulunamayan bir alıntı düğmenin KENDİSİNİ kırmızı yapıyor,
+     yani kapalıyken de görünüyor. Açık/kapalı durumu JS'te tutuluyor, çünkü
+     canlı sayfa tabloyu her 10 saniyede baştan çiziyor (bkz. openProv). */
+  tr.has-prov.open td{ border-bottom:none; padding-bottom:5px; }
+  tr.src-row{ display:none; }
+  tr.src-row.open{ display:table-row; }
   tr.src-row td{ padding:0 15px 14px; border-bottom:1px solid var(--border-soft); }
   tr.src-row.leg td{ padding-left:30px; }
   tbody tr.src-row:hover{ background:transparent; }
+  .prov-btn{
+    display:flex; width:max-content; align-items:center; gap:5px; margin-top:6px;
+    padding:2px 9px 2px 3px; border-radius:999px; cursor:pointer;
+    background:transparent; border:1px solid var(--border);
+    font-family:inherit; font-size:10px; font-weight:700; line-height:1.3;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .prov-btn:hover{ color:var(--accent-ink); border-color:var(--accent-ink); }
+  .prov-btn:hover .prov-i{ color:var(--accent-ink); border-color:var(--accent-ink); }
+  .prov-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .prov-btn[aria-expanded="true"]{ color:var(--accent-ink); border-color:var(--accent-ink); background:var(--surface-2); }
+  .prov-btn[aria-expanded="true"] .prov-i{ color:var(--accent-ink); border-color:var(--accent-ink); }
+  .prov-btn.warn, .prov-btn.warn .prov-i{ color:var(--loss); border-color:var(--loss); }
+  .prov-caret{ display:inline-block; transition:transform .18s ease; }
+  .prov-btn[aria-expanded="true"] .prov-caret{ transform:rotate(180deg); }
+  @media (prefers-reduced-motion:reduce){ .prov-caret{ transition:none; } }
+  .sart .prov{ display:none; }
+  .sart .prov.open{ display:block; }
+  /* Kağıda basılan sayfada tıklanacak bir şey yok: hepsi açık basılır. */
+  @media print{
+    tr.src-row{ display:table-row; }
+    .sart .prov{ display:block; }
+    .prov-btn{ display:none; }
+  }
   .prov{
     font-size:12px; line-height:1.55; color:var(--ink-soft);
     background:var(--surface-2); border:1px solid var(--border-soft);
@@ -504,8 +537,10 @@
   .sart-lead{ font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 8px; }
 
   @media (max-width:760px){
-    tbody tr.has-prov{ border-bottom:none; padding-bottom:4px; }
+    tbody tr.has-prov.open{ border-bottom:none; padding-bottom:4px; }
     tbody tr.src-row{ padding-top:0; }
+    tbody tr.src-row.open{ display:block; }
+    tbody td > .prov-btn{ justify-self:end; }
     /* .leg too: the desktop indent (tr.src-row.leg td) outranks a plain
        tr.src-row rule and pushed the box 30px right inside the card. */
     tbody tr.src-row td, tbody tr.src-row.leg td{ display:block; padding:0; }
@@ -727,10 +762,11 @@
         eklenir. Tetik yalnızca video <b>yayınlandıktan sonraki</b> fiyatlara bakar ("kırılırsa" o an kırılmamış
         demektir); fiyat şarttaki seviyedir. Ne alınacağı ya da ne yapılacağı söylenmemiş şartlar
         ("diğer altcoinler", "revize ederiz") tranş açmaz, "Bekleyen şartlar" bölümünde izlenir.</li>
-      <li><b>Her tranşın dayanağı altında yazıyor:</b> konuşmacının cümlesi transkriptten birebir (altyazı
-        hatalarıyla birlikte — düzeltmeler nota yazılır), videonun tarihi ve başlığı, ve ▶ ile videonun o
-        saniyesine giden bağlantı. Her alıntı transkripte karşı otomatik doğrulanıyor; bulunamayan bir alıntı
-        kırmızıyla işaretlenir.</li>
+      <li><b>Her tranşın dayanağı bir tık uzakta:</b> adının altındaki <b>dayanak</b> düğmesi konuşmacının
+        cümlesini transkriptten birebir (altyazı hatalarıyla birlikte — düzeltmeler nota yazılır), videonun
+        tarihini ve başlığını, ve ▶ ile videonun o saniyesine giden bağlantıyı açar. Her alıntı transkripte
+        karşı otomatik doğrulanıyor; bulunamayan bir alıntı varsa düğme kapalıyken de kırmızı
+        "doğrulanamadı" yazar.</li>
       <li><b>Her sinyal 1.000 $, ve tarih işlemin OLDUĞU videoya yazılır</b> — sonradan özetlendiği videoya
         değil. Aynı varlıktan tekrar "aldım" derse mevcut satır büyütülmez, yeni bir tranş eklenir.</li>
       <li><b>Kısmen satılan pozisyonlar iki satır.</b> Rocket Lab'ın yarısı 16 Eylül'de satıldı, yarısı açık
@@ -980,8 +1016,12 @@ function rowHTML(r, isLeg){
     : `<span style="color:var(--ink-faint)">—</span>`;
 
   const prov = provHTML(r);
-  return `<tr class="${(isLeg ? "leg" : "") + rowFlash + (prov ? " has-prov" : "")}">
-    <td><span class="asset-name">${esc(r.name)}</span>${r.otomatik ? `<span class="auto-tag" title="Konuşmacının koyduğu şart piyasada gerçekleşti; tranş kendiliğinden açıldı">⚡ otomatik</span>` : ""}${isLeg ? "" : `<span class="asset-ticker">${esc(r.sym)}</span>`}</td>
+  const key = r._k;
+  const isOpen = openProv.has(key);
+  const provAttr = prov ? ` data-prov="${key}"` : "";
+  return `<tr class="${(isLeg ? "leg" : "") + rowFlash + (prov ? " has-prov" : "") + (prov && isOpen ? " open" : "")}"${provAttr}>
+    <td><span class="asset-name">${esc(r.name)}</span>${r.otomatik ? `<span class="auto-tag" title="Konuşmacının koyduğu şart piyasada gerçekleşti; tranş kendiliğinden açıldı">⚡ otomatik</span>` : ""}${isLeg ? "" : `<span class="asset-ticker">${esc(r.sym)}</span>`}${
+      prov ? provBtn(key, isOpen, hasUnverified(r.kaynak)) : ""}</td>
     <td class="mono">${trDate(r.buy_date)}</td>
     <td class="right mono">${buyPrice}</td>
     <td class="right mono">${qty}</td>
@@ -997,7 +1037,7 @@ function rowHTML(r, isLeg){
       <div class="pct ${gcls}">${pctTxt(gainPct)}</div>
       ${barHTML(Math.min(100, value / (r.invested * 2) * 100))}
     </td>
-  </tr>${prov ? `<tr class="src-row${isLeg ? " leg" : ""}"><td colspan="8">${prov}</td></tr>` : ""}`;
+  </tr>${prov ? `<tr class="src-row${isLeg ? " leg" : ""}${isOpen ? " open" : ""}" id="prov-${key}"${provAttr}><td colspan="8">${prov}</td></tr>` : ""}`;
 }
 
 /* ---------- dayanak ------------------------------------------------------
@@ -1025,12 +1065,47 @@ function provItems(list){
 
 function provHTML(r){
   if (!(r.kaynak && r.kaynak.length) && !r.not) return "";
+  // Kutunun "Dayanak" başlığı artık onu açan düğmede; burada yalnızca
+  // düğmenin söylemediği şey kalıyor: tranşı hangi tetiğin açtığı.
   const head = r.otomatik
-    ? `<span class="prov-i">i</span>Dayanak <span class="prov-auto">· ⚡ otomatik tetik: ${esc(r.tetik ? r.tetik.gerceklesme : "")}</span>`
-    : `<span class="prov-i">i</span>Dayanak`;
-  return `<div class="prov"><div class="prov-head">${head}</div>${provItems(r.kaynak)}${
+    ? `<div class="prov-head"><span class="prov-auto">⚡ otomatik tetik: ${esc(r.tetik ? r.tetik.gerceklesme : "")}</span></div>`
+    : "";
+  return `<div class="prov">${head}${provItems(r.kaynak)}${
     r.not ? `<div class="prov-note">${esc(r.not)}</div>` : ""}</div>`;
 }
+
+/* Dayanak kutuları kapalı başlar (bkz. CSS'teki not). Açık olanlar burada
+   tutuluyor, DOM'da değil: canlı sayfa tabloyu her tikte innerHTML ile baştan
+   kuruyor ve durumu DOM'da tutmak, okuyucunun açtığı kutuyu en geç 10 saniye
+   sonra kendiliğinden kapatırdı. Anahtar DATA.rows'taki sıra -- iki bacağa
+   bölünen bir tranşın (kısmi satış) iki satırı aynı ismi taşıyor. */
+const openProv = new Set();
+DATA.rows.forEach((r, i) => { r._k = "r" + i; });
+(DATA.sartlar || []).forEach((s, i) => { s._k = "s" + i; });
+
+const hasUnverified = (list) => (list || []).some((k) => k.soz && k.dogrulandi === false);
+
+function provBtn(key, open, warn){
+  return `<button type="button" class="prov-btn${warn ? " warn" : ""}" data-prov-btn="${key}"
+    aria-expanded="${open ? "true" : "false"}" aria-controls="prov-${key}"
+    title="Konuşmacının bu satıra dayanak olan sözleri"><span class="prov-i">i</span>dayanak${
+    warn ? " · doğrulanamadı" : ""}<span class="prov-caret" aria-hidden="true">▾</span></button>`;
+}
+
+/* Tek bir dinleyici, düğmelere tek tek değil: tablo her tikte yeniden
+   çizildiğinde düğmeler de yeniden yaratılıyor. Açıp kapatmak yeniden çizim
+   yapmıyor, yalnızca sınıfları çeviriyor. */
+function provToggle(key){
+  const open = !openProv.has(key);
+  if (open) openProv.add(key); else openProv.delete(key);
+  document.querySelectorAll(`[data-prov="${key}"]`).forEach((el) => el.classList.toggle("open", open));
+  document.querySelectorAll(`[data-prov-btn="${key}"]`).forEach((b) =>
+    b.setAttribute("aria-expanded", open ? "true" : "false"));
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-prov-btn]");
+  if (b) provToggle(b.getAttribute("data-prov-btn"));
+});
 
 function renderSartlar(){
   const el = document.getElementById("sartlar");
@@ -1041,7 +1116,7 @@ function renderSartlar(){
     `<span><b>${on.length}</b> açık · <b>${list.length - on.length}</b> yalnızca izleniyor</span>`;
   const lead = `<p class="sart-lead">Konuşmacının "şu seviyeye gelirse alırım/satarım" dediği ve henüz
     gerçekleşmemiş şartlar. <b>Açık</b> olanlar her gece fiyata karşı kontrol edilir; seviye gelince tranş
-    kendiliğinden açılır ve tablodaki satırın altında hangi sözle açıldığı yazar. <b>Yalnızca izlenenler</b>
+    kendiliğinden açılır; hangi sözle açıldığı tablodaki satırın <b>dayanak</b> düğmesinde. <b>Yalnızca izlenenler</b>
     tranş açmaz, çünkü cümlede ne alınacağı ya da ne yapılacağı yok.</p>`;
   if (!list.length) { el.innerHTML = lead + `<p class="sart-lead">Şu an bekleyen şart yok.</p>`; return; }
   const num = (v) => Number(v).toLocaleString("tr-TR", {maximumFractionDigits: 4});
@@ -1050,10 +1125,13 @@ function renderSartlar(){
     const meta = active
       ? `${esc(s.sym)} · ${s.yon === "yukarı" ? "yukarı" : "aşağı"} ${num(s.seviye)} · ${esc(s.esas)} · ${esc(s.eylem)}`
       : esc(s.neden || s.durum);
+    const key = s._k;
+    const isOpen = openProv.has(key);
+    const hasProv = (s.kaynak || []).length > 0;
     return `<div class="sart ${active ? "on" : "off"}">
       <div class="sart-head"><span class="badge ${active ? "open" : "closed"}">${active ? "açık · seviye gelince tranş açılır" : "izleniyor · tranş açmaz"}</span><b>${esc(s.ozet)}</b></div>
       <div class="sart-meta">${meta}</div>
-      <div class="prov">${provItems(s.kaynak)}</div>
+      ${hasProv ? provBtn(key, isOpen, hasUnverified(s.kaynak)) + `<div class="prov${isOpen ? " open" : ""}" id="prov-${key}" data-prov="${key}" style="margin-top:6px">${provItems(s.kaynak)}</div>` : ""}
     </div>`;
   }).join("");
 }
