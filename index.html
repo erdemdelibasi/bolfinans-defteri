@@ -756,11 +756,12 @@
         alım/satım anı yok.</li>
       <li><b>Konuşmacının koyduğu şartlar kendiliğinden işletilir</b> (25 Eyl 2026'dan itibaren). "2.770
         günlükte kırılırsa 3. kademe alırım" gibi somut bir seviye ve somut bir eylem içeren her cümle bir
-        <i>şart</i> olarak kaydedilir ve her gece fiyata karşı kontrol edilir; seviye gelince tranş açılır —
+        <i>şart</i> olarak kaydedilir ve 15 dakikada bir fiyata karşı kontrol edilir; seviye gelince tranş açılır —
         sonraki bir videoda bahsedilmese de, sonradan "almadım" denmiş olsa da. Defter konuşmacının koyduğu
         kuralların sicilidir. Sonradan söylenenler silinmez, satırın altına <b>"Sonra dedi ki"</b> diye
         eklenir. Tetik yalnızca video <b>yayınlandıktan sonraki</b> fiyatlara bakar ("kırılırsa" o an kırılmamış
-        demektir); fiyat şarttaki seviyedir. Ne alınacağı ya da ne yapılacağı söylenmemiş şartlar
+        demektir); fiyat şarttaki seviyedir. Tranşın tarihi seviyenin gerçekten geldiği saattir, kontrolün
+        onu fark ettiği an değil. Ne alınacağı ya da ne yapılacağı söylenmemiş şartlar
         ("diğer altcoinler", "revize ederiz") tranş açmaz, "Bekleyen şartlar" bölümünde izlenir.</li>
       <li><b>Her tranşın dayanağı bir tık uzakta:</b> adının altındaki <b>dayanak</b> düğmesi konuşmacının
         cümlesini transkriptten birebir (altyazı hatalarıyla birlikte — düzeltmeler nota yazılır), videonun
@@ -1115,7 +1116,7 @@ function renderSartlar(){
   document.getElementById("sart-sum").innerHTML =
     `<span><b>${on.length}</b> açık · <b>${list.length - on.length}</b> yalnızca izleniyor</span>`;
   const lead = `<p class="sart-lead">Konuşmacının "şu seviyeye gelirse alırım/satarım" dediği ve henüz
-    gerçekleşmemiş şartlar. <b>Açık</b> olanlar her gece fiyata karşı kontrol edilir; seviye gelince tranş
+    gerçekleşmemiş şartlar. <b>Açık</b> olanlar 15 dakikada bir fiyata karşı kontrol edilir; seviye gelince tranş
     kendiliğinden açılır; hangi sözle açıldığı tablodaki satırın <b>dayanak</b> düğmesinde. <b>Yalnızca izlenenler</b>
     tranş açmaz, çünkü cümlede ne alınacağı ya da ne yapılacağı yok.</p>`;
   if (!list.length) { el.innerHTML = lead + `<p class="sart-lead">Şu an bekleyen şart yok.</p>`; return; }
